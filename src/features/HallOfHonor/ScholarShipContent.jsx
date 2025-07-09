@@ -534,7 +534,7 @@ const ScholarShipContent = ({
                     >
                       {student.photo?.photoUrl ? (
                         <img
-                          src={`${BASE_URL}/${student.photo.photoUrl}`}
+                          src={`${BASE_URL}${student.photo.photoUrl}`}
                           alt="Student"
                           className="lg:h-[260px] lg:w-[208px] w-[208px] h-[160px] object-cover object-top rounded-[15px]"
                         />
@@ -592,7 +592,7 @@ const ScholarShipContent = ({
                 </p>
               </div>
               <img
-                src={`${BASE_URL}/${modalStudent.photo?.photoUrl}`}
+                src={`${BASE_URL}${modalStudent.photo?.photoUrl}`}
                 alt={modalStudent.student?.name}
                 className="absolute object-cover object-top -bottom-[3%] left-1/2 transform -translate-x-1/2 w-28 h-28 rounded-full shadow-lg"
               />
@@ -692,7 +692,7 @@ const ScholarShipContent = ({
                 <div className="relative w-full">
                   <div className="absolute -top-12 left-1/2 transform -translate-x-1/2">
                     <img
-                      src={`${BASE_URL}/${modalStudent.photo?.photoUrl}`}
+                      src={`${BASE_URL}${modalStudent.photo?.photoUrl}`}
                       alt={modalStudent.student?.name}
                       className="w-[100px] h-[100px] rounded-full object-cover object-top shadow-lg"
                     />

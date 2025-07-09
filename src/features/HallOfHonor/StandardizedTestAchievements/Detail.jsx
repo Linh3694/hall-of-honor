@@ -339,7 +339,7 @@ const Detail = () => {
                   >
                     {student.photo?.photoUrl ? (
                       <img
-                        src={`${BASE_URL}/${student.photo.photoUrl}`}
+                        src={`${BASE_URL}${student.photo.photoUrl}`}
                         alt="Student"
                         className="h-[260px] w-[208px] object-cover object-top rounded-2xl  shadow-md mb-2"
                       />
@@ -352,10 +352,10 @@ const Detail = () => {
                       {t("classPrefix")} {className} - {t("schoolYearAbbr")}{" "}
                       {schoolYearLabel}
                     </div>
-                    <div className="text-[#F9D16F] text-[22px] font-bold text-center">
+                    <div className="text-[#F9D16F] text-[20px] font-bold text-center">
                       {student.student?.name}
                     </div>
-                    <div className="text-white text-[18px] font-semibold text-center">
+                    <div className="text-white text-[14px] font-semibold text-center">
                       {group.exam} -{" "}
                       <span className="text-[#F9D16F]">{score}/5</span>
                     </div>
