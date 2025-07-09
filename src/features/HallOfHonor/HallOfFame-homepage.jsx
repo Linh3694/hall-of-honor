@@ -22,7 +22,7 @@ const HallofFame = () => {
     const newLanguage = i18n.language === "vi" ? "en" : "vi";
     i18n.changeLanguage(newLanguage);
   };
-  // 1. Thêm state mới ngay sau các state đã có (ví dụ, sau const [quoteIndex, setQuoteIndex] = useState(null);)
+  // 1. Thêm state mới ngay sau các state đã có (ví dụ, sau const [quoteIndex, setQuoteIndex] = useState(null);) THÊM 1 chút code để chuyển đổi ngôn ngữ
   const [selectedStudent, setSelectedStudent] = useState(null);
   const { width, isMobile } = useResponsive();
   const isMobileView = isMobile; // hoặc: width < 1024;
