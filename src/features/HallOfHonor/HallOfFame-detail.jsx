@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams, Outlet } from "react-router-dom";
 import i18n from "../../core/i18n";
-import { CDN_URL } from "../../core/config";
 import Sidebar from "./Sidebar";
 import StudentHonorContent from "./StudentHonorContent";
 import ClassHonorContent from "./ClassHonorContent";

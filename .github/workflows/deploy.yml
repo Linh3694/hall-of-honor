@@ -22,7 +22,9 @@ jobs:
         run: npm ci --legacy-peer-deps
       - name: "Fix axios {}: _global bug line"
         run: |
-          sed -i 's/{}: _global,/global: _global,/g' node_modules/axios/lib/utils.js
+          ls -la node_modules/axios/lib/utils.js
+          sed -i 's/\{\}\: _global,/global: _global,/g' node_modules/axios/lib/utils.js
+          grep -n "global" node_modules/axios/lib/utils.js | head -5
       - name: Build project
         run: npm run build
       - name: Deploy to server
