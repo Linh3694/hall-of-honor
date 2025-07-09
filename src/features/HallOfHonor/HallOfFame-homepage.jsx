@@ -474,7 +474,7 @@ const HallofFame = () => {
         {/* Logo/nút khác bên phải */}
         <div className="flex flex-row gap-10 items-center">
           <img
-            src={`/HJ-white.png`}
+            src={`/halloffame/HJ-white.png`}
             className="h-12 hidden md:block"
             alt="Happy Journey"
           />
