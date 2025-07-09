@@ -36,7 +36,7 @@ jobs:
         with:
           host: 42.96.40.246
           username: root
-          key: ${{ secrets.SSH_KEY }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           script: |
             # Navigate to project directory
