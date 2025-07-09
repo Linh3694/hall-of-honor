@@ -44,7 +44,9 @@ jobs:
             # Pull latest changes
             git pull origin main
             # Install dependencies
-            npm ci --legacy-peer-deps
+            npm install --legacy-peer-deps
+            # Xóa dòng lỗi trong axios
+            sed -i '/{}: _global,/d' node_modules/axios/lib/utils.js
             # Build project
             npm run build
             # Restart PM2 process

@@ -339,7 +339,7 @@ const Detail = () => {
                   >
                     {student.photo?.photoUrl ? (
                       <img
-                        src={`${BASE_URL}${student.photo.photoUrl}`}
+                        src={`${BASE_URL}/${student.photo.photoUrl}`}
                         alt="Student"
                         className="h-[260px] w-[208px] object-cover object-top rounded-2xl  shadow-md mb-2"
                       />

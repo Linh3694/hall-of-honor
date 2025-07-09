@@ -616,7 +616,7 @@ const StudentHonorContent = ({
           <div className="relative mb-4 mt-8 w-full max-h-[470px] mx-auto">
             {/* Lớp dưới cùng: ảnh coverImage */}
             <img
-              src={`${BASE_URL}${currentCategory.coverImage}`}
+              src={`${BASE_URL}/${currentCategory.coverImage}`}
               alt="Cover"
               className="w-full max-h-[470px] object-cover"
               onError={(e) => {
@@ -763,7 +763,7 @@ const StudentHonorContent = ({
                 >
                   {student.photo?.photoUrl ? (
                     <img
-                      src={`${BASE_URL}/${student.photo.photoUrl}`}
+                      src={`${BASE_URL}//${student.photo.photoUrl}`}
                       alt="Student"
                       className="lg:h-[260px] lg:w-[208px] w-[208px] h-[160px] object-cover object-top rounded-[15px]"
                     />
@@ -834,7 +834,7 @@ const StudentHonorContent = ({
                           >
                             {student.photo?.photoUrl ? (
                               <img
-                                src={`${BASE_URL}/${student.photo.photoUrl}`}
+                                src={`${BASE_URL}//${student.photo.photoUrl}`}
                                 alt="Student"
                                 className="lg:h-[260px] lg:w-[208px] w-[208px] h-[160px] object-cover object-top rounded-[15px]"
                               />
@@ -888,7 +888,7 @@ const StudentHonorContent = ({
               <div className="relative flex-shrink-0 px-[25px] lg:px-0">
                 {modalStudent.photo?.photoUrl ? (
                   <img
-                    src={`${BASE_URL}/${modalStudent.photo.photoUrl}`}
+                    src={`${BASE_URL}//${modalStudent.photo.photoUrl}`}
                     alt="Student"
                     className="relative z-10 lg:w-[281px] lg:h-[352px] w-full h-[320px] items-center object-cover object-top rounded-[15px] shadow-md "
                   />
