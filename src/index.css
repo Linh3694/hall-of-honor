@@ -1,0 +1,387 @@
+@import url('https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'Metropolis';
+  src: url('./assets/fonts/VLMetropolis-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
+
+
+
+body {
+  margin: 0;
+  font-family: 'Mulish', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+.truncate-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* Giới hạn tối đa 2 dòng */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 2em; /* Điều chỉnh chiều cao dòng */
+  max-height: calc(1.2em * 2); /* Giữ tổng chiều cao đúng 2 dòng */
+  white-space: normal;
+  word-break: break-word; /* Đảm bảo chữ không bị tràn */
+}
+
+.truncate-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 6; /* Giới hạn tối đa 5 dòng */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.6rem; /* Đảm bảo chiều cao dòng nhất quán */
+  max-height: calc(1.6rem * 6); /* Giữ tổng chiều cao đúng 5 dòng */
+  white-space: normal;
+}
+
+.truncate-text::after {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(227, 227, 227, 1)); /* Hiệu ứng mờ */
+  padding-left: 5px;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 50px); /* Bao gồm -50% theo X để giữ căn giữa */
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);   /* Giữ -50% theo X */
+  }
+}
+
+.animate-slide-up {
+  animation: slideUp 1s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-down {
+  animation: slideDown 1s ease-out;
+}
+
+@keyframes slideFromLeft {
+  from {
+    opacity: 0;
+    transform: translate(calc(-50% - 30px), 0); /* -50% giữ căn giữa, thêm dịch chuyển từ trái 30px */
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+.animate-slide-from-left {
+  animation: slideFromLeft 1s ease-out;
+}
+
+@keyframes slideFromRight {
+  from {
+    opacity: 0;
+    transform: translate(calc(-50% + 30px), 0); /* -50% giữ căn giữa, +30px dịch chuyển từ phải */
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+.animate-slide-from-right {
+  animation: slideFromRight 1s ease-out;
+}
+
+/* Ẩn nút tăng/giảm trên Chrome, Safari, Edge */
+.no-spinner::-webkit-outer-spin-button,
+.no-spinner::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Ẩn nút tăng/giảm trên Firefox */
+.no-spinner {
+  -moz-appearance: textfield;
+}
+
+
+/* Ẩn thanh cuộn cho Timeline horizontal */
+.hide-scrollbar {
+  -ms-overflow-style: none; /* IE và Edge */
+  scrollbar-width: none; /* Firefox */
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+
+.hall-of-fame-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* hoặc điều chỉnh theo nhu cầu */
+}
+
+.shiny-button-wrapper {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  outline: none;
+}
+
+.shiny-text {
+  position: relative;
+  font-size: 3rem;
+  font-weight: bold;
+  color: white;
+  overflow: hidden;
+}
+
+.shiny-text::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -75%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.8) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: skewX(-25deg);
+  transition: left 0.75s ease-in-out;
+}
+
+.shiny-button-wrapper:hover .shiny-text::before {
+  left: 125%;
+}
+
+/* file globals.css hoặc index.css */
+/* Ví dụ: globals.css / App.css */
+.shimmer-text {
+    background: linear-gradient(
+    45deg,
+    #e6c265 40%,
+    #FFFFFF 80%,
+    #e6c265 100%
+  );
+  background-size: 200% 100%;
+  
+  /* Cắt gradient theo chữ */
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  /* Animation quét từ phải sang trái (hoặc ngược lại) */
+  animation: goldShimmer 3s linear infinite;
+}
+
+
+@keyframes goldShimmer {
+  0% {
+    background-position: 200% center;
+  }
+  100% {
+    background-position: 0% center;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% center;
+  }
+  100% {
+    background-position: 0% center;
+  }
+}
+/* Ban đầu, ẩn marquee bằng opacity và dịch chuyển xuống dưới 50px */
+.marquee-container.pre-init {
+  opacity: 0;
+  transform: translateY(50px);
+}
+
+/* Khi kích hoạt, chuyển sang hiển thị với hiệu ứng chuyển mượt */
+.marquee-container.active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+}
+/* Ví dụ trong App.css hoặc globals.css */
+.marquee-container {
+  width: 100%;
+  overflow: hidden;
+  will-change: transform;
+  transform: translateZ(0);
+
+  height: auto;
+  margin: 1rem 0;
+}
+
+.marquee-track {
+  display: inline-flex;
+  white-space: nowrap;
+  animation: marquee 20s linear infinite;
+}
+
+@layer utilities {
+  @keyframes marquee {
+    0%   { transform: translateX(0%); }
+    100% { transform: translateX(-50%); }
+  }
+  .animate-marquee {
+    animation: marquee 20s linear infinite linear;
+  }
+  }
+
+.shimmer-text-2 {
+  background: linear-gradient(
+    45deg,
+    #002855 0%,
+    #FFFFFF 40%,
+    #002855 100%
+  );
+  background-size: 200% 100%;
+
+  /* Cắt gradient theo chữ */
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  /* Animation quét từ phải sang trái */
+  animation: blueShimmer 2s linear infinite;
+}
+
+@keyframes blueShimmer {
+  0% {
+    background-position: 200% center;
+  }
+  100% {
+    background-position: 0% center;
+  }
+}
+
+.shimmer-text-title {
+  background: linear-gradient(45deg,
+    #f9d16f 0%,
+    #db9a38 28%,
+    #fff1d5 62%,
+    #f9d16f 100%);
+  background-size: 200% 100%;
+
+  /* Cắt gradient theo chữ */
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  /* Animation quét từ phải sang trái */
+  animation: blueShimmer 5s linear infinite;
+}
+
+@keyframes blueShimmer {
+  0% {
+    background-position: 200% center;
+  }
+
+  100% {
+        background-position: -200% center;
+  }
+}
+.fixed-section {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  z-index: -1;
+}
+
+@keyframes fadeDown {
+  0% {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeLeft {
+  0% {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeRight {
+  0% {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Class cho laptop fade từ trên xuống */
+.fadeDown {
+  animation: fadeDown 2s ease forwards;
+}
+
+/* Class cho phone từ trái sang */
+.fadeLeft {
+  animation: fadeLeft 2s ease  forwards;
+  /* Delay 0.2s */
+}
+
+/* Class cho tablet từ phải sang */
+.fadeRight {
+  animation: fadeRight 2s ease  forwards;
+  /* Delay 0.4s */
+}
+
+.filter-green {
+  filter: brightness(0) saturate(100%) invert(47%) sepia(98%) saturate(497%) hue-rotate(86deg) brightness(92%) contrast(89%);
+}
+
+.filter-yellow {
+  filter: brightness(0) saturate(100%) invert(84%) sepia(19%) saturate(2593%) hue-rotate(337deg) brightness(102%) contrast(98%);
+}
+
+.filter-gray {
+  filter: brightness(0) saturate(100%) invert(76%) sepia(0%) saturate(2%) hue-rotate(198deg) brightness(92%) contrast(87%);
+}
+
+.filter-red {
+  filter: invert(27%) sepia(97%) saturate(4992%) hue-rotate(350deg) brightness(80%) contrast(110%);
+}
