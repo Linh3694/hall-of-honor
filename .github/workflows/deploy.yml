@@ -43,10 +43,10 @@ jobs:
             cd /srv/app/hall-of-honor
             # Pull latest changes
             git pull origin main
-            # Install dependencies
-            npm install --legacy-peer-deps
-            # Xóa dòng lỗi trong axios
-            sed -i '/{}: _global,/d' node_modules/axios/lib/utils.js
+                          # Install dependencies
+              npm install --legacy-peer-deps
+              # Xóa dòng lỗi trong axios (line 735)
+              sed -i '735d' node_modules/axios/lib/utils.js
             # Build project
             npm run build
             # Restart PM2 process
