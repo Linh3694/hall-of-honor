@@ -20,11 +20,11 @@ jobs:
           cache: "npm"
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
-      - name: Build project
-        run: npm run build
       - name: "Remove axios {}: _global bug line"
         run: |
           sed -i '/{}: _global,/d' node_modules/axios/lib/utils.js
+      - name: Build project
+        run: npm run build
       - name: Deploy to server
         uses: appleboy/ssh-action@v1.0.3
         with:
