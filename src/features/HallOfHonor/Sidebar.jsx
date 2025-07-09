@@ -15,6 +15,24 @@ const Sidebar = ({
   const { t } = useTranslation();
   const navigate = useNavigate();
 
+  // Hàm chuyển đổi category ID thành name
+  const getCategoryNameFromId = (id) => {
+    switch (id) {
+      case "67c17b7ae8a7b376ad9986c1":
+        return "scholarship-talent";
+      case "67c1799de8a7b376ad998650":
+        return "honor-student";
+      case "67c17aaee8a7b376ad9986bb":
+        return "honor-class";
+      case "67c17afce8a7b376ad9986be":
+        return "wisers-effort";
+      case "6833dbe3edff5e164ffc1589":
+        return "standardized-test";
+      default:
+        return null;
+    }
+  };
+
   // Danh sách ID các danh mục đã có giao diện (được xử lý trong switch).
   const enabledCategoryIds = [
     "67c1799de8a7b376ad998650",
@@ -140,7 +158,12 @@ const Sidebar = ({
                 onClick={() => {
                   if (!hasSubcategories) {
                     if (isCatEnabled) {
-                      setSelectedCategoryId(fixedCat.id);
+                      const categoryName = getCategoryNameFromId(fixedCat.id);
+                      if (categoryName) {
+                        navigate(`/detail/${categoryName}`);
+                      } else {
+                        setSelectedCategoryId(fixedCat.id);
+                      }
                       // Delay việc đóng sidebar để đảm bảo state được cập nhật trước
                       setTimeout(() => {
                         if (window.innerWidth < 1600) {
@@ -187,7 +210,12 @@ const Sidebar = ({
                 `}
                         onClick={() => {
                           if (isSubEnabled) {
-                            setSelectedCategoryId(sub.id);
+                            const categoryName = getCategoryNameFromId(sub.id);
+                            if (categoryName) {
+                              navigate(`/detail/${categoryName}`);
+                            } else {
+                              setSelectedCategoryId(sub.id);
+                            }
                             // Delay việc đóng sidebar để đảm bảo state được cập nhật trước
                             setTimeout(() => {
                               if (window.innerWidth < 1600) {

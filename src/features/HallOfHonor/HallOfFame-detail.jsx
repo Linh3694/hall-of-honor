@@ -95,20 +95,43 @@ function HallOfFamePublicPage() {
     const categoryName = getCategoryNameFromId(selectedCategoryId);
     if (!categoryName) return;
 
-    // Nếu đang ở trang detail subAward thì không redirect
-    if (tenSubAward) return;
-
     // Nếu URL đã ở trang chi tiết (có recordId kèm theo studentId hoặc classId) thì giữ nguyên
     if (recordId && (studentId || classId)) {
       return;
     }
 
-    const timeoutId = setTimeout(() => {
-      navigate(`/detail/${categoryName}`, { replace: true });
-    }, 0);
+    // Nếu đang ở trang detail subAward, chỉ navigate nếu category khác nhau
+    if (tenSubAward && category === categoryName) {
+      return;
+    }
 
-    return () => clearTimeout(timeoutId);
-  }, [selectedCategoryId, navigate, recordId, studentId, classId, tenSubAward]);
+    // Nếu đang ở URL khác với category được chọn, thì navigate
+    if (category !== categoryName) {
+      const timeoutId = setTimeout(() => {
+        navigate(`/detail/${categoryName}`, { replace: true });
+      }, 0);
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [
+    selectedCategoryId,
+    navigate,
+    recordId,
+    studentId,
+    classId,
+    tenSubAward,
+    category,
+  ]);
+
+  // Đảm bảo selectedCategoryId luôn sync với category từ URL
+  useEffect(() => {
+    if (!tenSubAward && category) {
+      const categoryId = getCategoryIdFromName(category);
+      if (categoryId && selectedCategoryId !== categoryId) {
+        setSelectedCategoryId(categoryId);
+      }
+    }
+  }, [category, tenSubAward, selectedCategoryId]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(

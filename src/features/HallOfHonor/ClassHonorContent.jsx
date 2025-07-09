@@ -657,7 +657,7 @@ const ClassHonorContent = ({
           <div className="relative mb-4 mt-8 w-full lg:w-[1410px] max-h-[470px] mx-auto">
             {/* Lớp dưới cùng: ảnh coverImage */}
             <img
-              src={`${BASE_URL}/${currentCategory.coverImage}`}
+              src={`${BASE_URL}${currentCategory.coverImage}`}
               alt="Cover"
               className="w-full h-auto object-cover"
             />
@@ -875,7 +875,7 @@ const ClassHonorContent = ({
                           >
                             {classPhotos[cls.classInfo?._id] ? (
                               <img
-                                src={`${BASE_URL}/${
+                                src={`${BASE_URL}${
                                   classPhotos[cls.classInfo?._id]
                                 }`}
                                 alt={`Ảnh lớp ${cls.classInfo?.className}`}
