@@ -247,7 +247,7 @@ const Detail = () => {
     );
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-10">
+    <div className="mx-auto px-4 py-10">
       {/* Tiêu đề và mô tả */}
       <div className="text-center mb-8">
         <div className="text-[40px] font-extrabold uppercase text-[#F05023] mb-2">
