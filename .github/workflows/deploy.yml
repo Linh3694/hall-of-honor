@@ -13,23 +13,18 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: "npm"
-
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
-
       - name: Build project
         run: npm run build
-
-      - name: Fix axios build bug
+      - name: "Remove axios {}: _global bug line"
         run: |
-          sed -i 's/{}: _global,/global: _global,/' node_modules/axios/lib/utils.js
-
+          sed -i '/{}: _global,/d' node_modules/axios/lib/utils.js
       - name: Deploy to server
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -40,21 +35,15 @@ jobs:
           script: |
             # Navigate to project directory
             cd /srv/app/hall-of-honor
-
             # Pull latest changes
             git pull origin main
-
             # Install dependencies
             npm ci --legacy-peer-deps
-
             # Build project
             npm run build
-
             # Restart PM2 process
             pm2 restart hall-of-honor || pm2 start "npm run preview -- --port 5000" --name hall-of-honor
-
             # Save PM2 configuration
             pm2 save
-
             # Show status
             pm2 status
