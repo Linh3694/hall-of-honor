@@ -23,6 +23,11 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 3000,
   },
+  preview: {
+    host: '0.0.0.0',
+    port: 5000,
+    allowedHosts: ['honor.wellspring.edu.vn', 'localhost', '127.0.0.1']
+  },
   build: {
     outDir: 'build',
     sourcemap: true,
