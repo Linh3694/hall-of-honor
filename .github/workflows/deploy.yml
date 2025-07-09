@@ -22,10 +22,13 @@ jobs:
         run: npm ci --legacy-peer-deps
       - name: "Fix axios {}: _global bug line"
         run: |
-          grep -n "{}: _global" node_modules/axios/lib/utils.js
-          sed -i '/.*{}: _global.*/d' node_modules/axios/lib/utils.js
-          echo "After fix:"
-          grep -n "global" node_modules/axios/lib/utils.js | head -3
+          echo "Looking for _global patterns:"
+          grep -n "_global" node_modules/axios/lib/utils.js
+          echo "Looking around line 735:"
+          sed -n '730,740p' node_modules/axios/lib/utils.js
+          sed -i '735d' node_modules/axios/lib/utils.js
+          echo "After removing line 735:"
+          sed -n '730,740p' node_modules/axios/lib/utils.js
       - name: Build project
         run: npm run build
       - name: Deploy to server
