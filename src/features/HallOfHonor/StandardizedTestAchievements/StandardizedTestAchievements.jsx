@@ -506,7 +506,7 @@ const StudentHonorContent = ({ categoryId, categoryName, setSearchParams }) => {
           <div className="relative mb-4 mt-8 w-full max-h-[470px] mx-auto">
             {/* Lớp dưới cùng: ảnh coverImage */}
             <img
-              src={`${BASE_URL}${currentCategory.coverImage}`}
+              src={`${BASE_URL}/${currentCategory.coverImage}`}
               alt="Cover"
               className="w-full max-h-[470px] object-cover"
             />
