@@ -26,6 +26,10 @@ jobs:
       - name: Build project
         run: npm run build
 
+      - name: Fix axios build bug
+        run: |
+          sed -i 's/{}: _global,/global: _global,/' node_modules/axios/lib/utils.js
+
       - name: Deploy to server
         uses: appleboy/ssh-action@v1.0.3
         with:
