@@ -34,8 +34,8 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: 22
           script: |
-          # Navigate to project directory
-          cd /srv/app/hall-of-honor
+            # Navigate to project directory
+            cd /srv/app/hall-of-honor
 
             # Pull latest changes
             git pull origin main
