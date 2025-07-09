@@ -55,7 +55,9 @@ const StudentHonorContent = ({
 
     const foundRecord = records.find((r) => r._id === recordIdParam);
     if (!foundRecord) {
-      navigate(`/hall-of-honor/detail/${categoryName}`);
+      if (categoryName) {
+        navigate(`/detail/${categoryName}`);
+      }
       return;
     }
 
@@ -67,7 +69,9 @@ const StudentHonorContent = ({
       }
     }
     if (!foundStudent) {
-      navigate(`/hall-of-honor/detail/${categoryName}`);
+      if (categoryName) {
+        navigate(`/detail/${categoryName}`);
+      }
       return;
     }
 
@@ -123,16 +127,6 @@ const StudentHonorContent = ({
       recordsData.forEach((record, index) => {
         if (index < 2) {
           // Log first 2 records
-          console.log(`Record ${index + 1}:`, {
-            students: record.students.slice(0, 3).map((s) => ({
-              name: s.student?.name,
-              hasPhoto: !!s.photo,
-              photoUrl: s.photo?.photoUrl,
-              fullImageUrl: s.photo?.photoUrl
-                ? `${BASE_URL}${s.photo.photoUrl}`
-                : null,
-            })),
-          });
         }
       });
     } catch (err) {
@@ -486,9 +480,12 @@ const StudentHonorContent = ({
     setModalRecord(record);
     setModalStudent(student);
     setShowModal(true);
-    navigate(
-      `/detail/${categoryName}/student/${record._id}/${student.student?._id}`
-    );
+
+    if (categoryName) {
+      navigate(
+        `/detail/${categoryName}/student/${record._id}/${student.student?._id}`
+      );
+    }
   };
 
   // Hàm đóng modal
@@ -497,7 +494,10 @@ const StudentHonorContent = ({
     setModalRecord(null);
     setModalStudent(null);
     setModalClass(null);
-    navigate(`/detail/${categoryName}`);
+
+    if (categoryName) {
+      navigate(`/detail/${categoryName}`);
+    }
   };
 
   // Hàm phụ: trả về text cho danh hiệu (VD: "Học sinh Danh dự - Tháng 8"), bilingual logic
@@ -783,24 +783,6 @@ const StudentHonorContent = ({
                         src={`${BASE_URL}${student.photo.photoUrl}`}
                         alt="Student"
                         className="w-full h-full object-cover object-top rounded-[15px]"
-                        onError={(e) => {
-                          console.log(
-                            `❌ Lỗi load ảnh cho ${student.student?.name}:`,
-                            e.target.src
-                          );
-                          e.target.style.display = "none";
-                          const fallbackDiv =
-                            e.target.parentElement.querySelector(
-                              ".fallback-photo"
-                            );
-                          if (fallbackDiv) fallbackDiv.style.display = "flex";
-                        }}
-                        onLoad={(e) => {
-                          console.log(
-                            `✅ Ảnh load thành công cho ${student.student?.name}:`,
-                            e.target.src
-                          );
-                        }}
                       />
                     ) : null}
                     <div
@@ -879,10 +861,6 @@ const StudentHonorContent = ({
                                   alt="Student"
                                   className="w-full h-full object-cover object-top rounded-[15px]"
                                   onError={(e) => {
-                                    console.log(
-                                      `❌ Lỗi load ảnh cho ${student.student?.name}:`,
-                                      e.target.src
-                                    );
                                     e.target.style.display = "none";
                                     const fallbackDiv =
                                       e.target.parentElement.querySelector(
@@ -891,12 +869,7 @@ const StudentHonorContent = ({
                                     if (fallbackDiv)
                                       fallbackDiv.style.display = "flex";
                                   }}
-                                  onLoad={(e) => {
-                                    console.log(
-                                      `✅ Ảnh load thành công cho ${student.student?.name}:`,
-                                      e.target.src
-                                    );
-                                  }}
+                                  onLoad={(e) => {}}
                                 />
                               ) : null}
                               <div
@@ -960,10 +933,6 @@ const StudentHonorContent = ({
                       alt="Student"
                       className="relative z-10 w-full h-full object-cover object-top rounded-[15px] shadow-md"
                       onError={(e) => {
-                        console.log(
-                          `❌ Lỗi load ảnh modal cho ${modalStudent.student?.name}:`,
-                          e.target.src
-                        );
                         e.target.style.display = "none";
                         const fallbackDiv =
                           e.target.parentElement.querySelector(
@@ -971,12 +940,7 @@ const StudentHonorContent = ({
                           );
                         if (fallbackDiv) fallbackDiv.style.display = "flex";
                       }}
-                      onLoad={(e) => {
-                        console.log(
-                          `✅ Ảnh modal load thành công cho ${modalStudent.student?.name}:`,
-                          e.target.src
-                        );
-                      }}
+                      onLoad={(e) => {}}
                     />
                   ) : null}
                   <div

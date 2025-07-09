@@ -135,25 +135,78 @@ const ClassHonorContent = ({
 
   const fetchClassPhotos = async () => {
     try {
-      const res = await axios.get(`${API_URL}/photos`);
-
-      // Handle both response formats: direct array or {data: array}
+      // Lấy ảnh từ Photo model
+      const photosRes = await axios.get(`${API_URL}/photos/public`);
       let photosData;
-      if (Array.isArray(res.data)) {
-        photosData = res.data;
-      } else if (res.data.data && Array.isArray(res.data.data)) {
-        photosData = res.data.data;
+      if (Array.isArray(photosRes.data)) {
+        photosData = photosRes.data;
+      } else if (photosRes.data.data && Array.isArray(photosRes.data.data)) {
+        photosData = photosRes.data.data;
       } else {
         photosData = [];
       }
 
+      console.log("📸 Photos data:", photosData);
+      console.log("📸 Total photos:", photosData.length);
+
+      // Lấy ảnh từ Class model
+      const classImagesRes = await axios.get(
+        `${API_URL}/classes/images/public`
+      );
+      let classImagesData;
+      if (Array.isArray(classImagesRes.data)) {
+        classImagesData = classImagesRes.data;
+      } else if (
+        classImagesRes.data.data &&
+        Array.isArray(classImagesRes.data.data)
+      ) {
+        classImagesData = classImagesRes.data.data;
+      } else {
+        classImagesData = [];
+      }
+
+      console.log("📸 Class images data:", classImagesData);
+      console.log("📸 Total class images:", classImagesData.length);
+
       const map = {};
+
+      // Ưu tiên ảnh từ Photo model
       photosData.forEach((p) => {
-        // p.class có dạng { _id, className }, ta lấy p.class._id làm key
         if (p.class && p.class._id) {
-          map[p.class._id] = p.photoUrl;
+          // Normalize photoUrl to ensure it starts with /
+          const normalizedPhotoUrl =
+            p.photoUrl && !p.photoUrl.startsWith("/")
+              ? `/${p.photoUrl}`
+              : p.photoUrl;
+          map[p.class._id] = normalizedPhotoUrl;
+          console.log(
+            "📸 Mapped class photo:",
+            p.class.className,
+            "->",
+            normalizedPhotoUrl
+          );
         }
       });
+
+      // Bổ sung ảnh từ Class model nếu chưa có
+      classImagesData.forEach((cls) => {
+        if (!map[cls._id] && cls.classImage) {
+          // Normalize classImage to ensure it starts with /
+          const normalizedClassImage =
+            cls.classImage && !cls.classImage.startsWith("/")
+              ? `/${cls.classImage}`
+              : cls.classImage;
+          map[cls._id] = normalizedClassImage;
+          console.log(
+            "📸 Mapped class image:",
+            cls.className,
+            "->",
+            normalizedClassImage
+          );
+        }
+      });
+
+      console.log("📸 Final class photos map:", map);
       setClassPhotos(map);
     } catch (err) {
       console.error("❌ Error fetchClassPhotos:", err);
@@ -550,16 +603,22 @@ const ClassHonorContent = ({
     setModalRecord(record);
     setModalClass(cls);
     setShowModal(true);
-    navigate(
-      `/hall-of-honor/detail/${categoryName}/class/${record._id}/${cls.classInfo?._id}`
-    );
+
+    if (categoryName) {
+      navigate(
+        `/detail/${categoryName}/class/${record._id}/${cls.classInfo?._id}`
+      );
+    }
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
     setModalRecord(null);
     setModalClass(null);
-    navigate(`/hall-of-honor/detail/${categoryName}`);
+
+    if (categoryName) {
+      navigate(`/detail/${categoryName}`);
+    }
   };
 
   const findSchoolYearLabel = (syId) => {
@@ -807,10 +866,31 @@ const ClassHonorContent = ({
                       src={`${BASE_URL}${classPhotos[cls.classInfo?._id]}`}
                       alt={`Ảnh lớp ${cls.classInfo?.className}`}
                       className="mt-2 w-full object-contain rounded-2xl"
+                      onError={(e) => {
+                        console.error("❌ Image failed to load:", e.target.src);
+                        console.error("❌ Class ID:", cls.classInfo?._id);
+                        console.error(
+                          "❌ Photo URL:",
+                          classPhotos[cls.classInfo?._id]
+                        );
+                        e.target.style.display = "none";
+                      }}
+                      onLoad={() => {
+                        console.log(
+                          "✅ Image loaded successfully:",
+                          `${BASE_URL}${classPhotos[cls.classInfo?._id]}`
+                        );
+                      }}
                     />
                   ) : (
                     <div className="text-xs italic text-[#f9d16f]">
                       Chưa có ảnh
+                      {console.log(
+                        "❌ No photo for class:",
+                        cls.classInfo?.className,
+                        "ID:",
+                        cls.classInfo?._id
+                      )}
                     </div>
                   )}
                   <div className="text-[#f9d16f] shimmer-text text-[20px] font-bold">
@@ -880,10 +960,37 @@ const ClassHonorContent = ({
                                 }`}
                                 alt={`Ảnh lớp ${cls.classInfo?.className}`}
                                 className="mt-2 w-full object-contain rounded-2xl"
+                                onError={(e) => {
+                                  console.error(
+                                    "❌ Image failed to load:",
+                                    e.target.src
+                                  );
+                                  console.error(
+                                    "❌ Class ID:",
+                                    cls.classInfo?._id
+                                  );
+                                  console.error(
+                                    "❌ Photo URL:",
+                                    classPhotos[cls.classInfo?._id]
+                                  );
+                                  e.target.style.display = "none";
+                                }}
+                                onLoad={() => {
+                                  console.log(
+                                    "✅ Image loaded successfully:",
+                                    `${BASE_URL}${classPhotos[cls.classInfo?._id]}`
+                                  );
+                                }}
                               />
                             ) : (
                               <div className="text-xs italic text-[#f9d16f]">
                                 Chưa có ảnh
+                                {console.log(
+                                  "❌ No photo for class:",
+                                  cls.classInfo?.className,
+                                  "ID:",
+                                  cls.classInfo?._id
+                                )}
                               </div>
                             )}
                             <div className="text-[#f9d16f] shimmer-text text-[20px] font-bold">
@@ -930,10 +1037,37 @@ const ClassHonorContent = ({
                     src={`${BASE_URL}${classPhotos[modalClass.classInfo?._id]}`}
                     alt="Class"
                     className="relative z-10 w-full h-auto object-cover rounded-[15px] shadow-md"
+                    onError={(e) => {
+                      console.error(
+                        "❌ Modal image failed to load:",
+                        e.target.src
+                      );
+                      console.error(
+                        "❌ Modal class ID:",
+                        modalClass.classInfo?._id
+                      );
+                      console.error(
+                        "❌ Modal photo URL:",
+                        classPhotos[modalClass.classInfo?._id]
+                      );
+                      e.target.style.display = "none";
+                    }}
+                    onLoad={() => {
+                      console.log(
+                        "✅ Modal image loaded successfully:",
+                        `${BASE_URL}${classPhotos[modalClass.classInfo?._id]}`
+                      );
+                    }}
                   />
                 ) : (
                   <div className="relative z-10 w-[518px] h-[377px] bg-gray-200 flex items-center justify-center rounded-lg shadow-md">
                     <span className="text-xs text-gray-400">Chưa có ảnh</span>
+                    {console.log(
+                      "❌ No photo for modal class:",
+                      modalClass.classInfo?.className,
+                      "ID:",
+                      modalClass.classInfo?._id
+                    )}
                   </div>
                 )}
               </div>
