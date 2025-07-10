@@ -210,28 +210,50 @@ const Detail = () => {
     }, []);
   }, [recordsOfSubAward, selectedSchoolYearId, searchName]);
 
-  // Nhóm theo Exam, sort theo Score từ cao đến thấp
+  // Nhóm theo Exam hoặc Score (tùy thuộc vào subAward), sort theo Score từ cao đến thấp
   const groupedByExam = useMemo(() => {
-    const examGroups = {};
+    if (!subAward) return [];
+
+    const isIelts = normalizeLabel(subAward.label) === "ielts";
+    const groups = {};
+
     filteredRecords.forEach((record) => {
       record.students.forEach((student) => {
-        const exam =
-          student.testName || student.examName || student.exam || "Khác";
-        if (!examGroups[exam]) examGroups[exam] = [];
-        examGroups[exam].push({ record, student });
+        let groupKey;
+
+        if (isIelts) {
+          // Đối với IELTS: group theo score
+          groupKey = student.score || student.result || "Chưa có điểm";
+        } else {
+          // Đối với các trường hợp khác: group theo exam
+          groupKey =
+            student.testName || student.examName || student.exam || "Khác";
+        }
+
+        if (!groups[groupKey]) groups[groupKey] = [];
+        groups[groupKey].push({ record, student });
       });
     });
-    // Chuyển thành mảng và sort theo tên exam
-    return Object.entries(examGroups)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([exam, items]) => ({
-        exam,
+
+    // Chuyển thành mảng và sort
+    return Object.entries(groups)
+      .sort(([a], [b]) => {
+        if (isIelts) {
+          // Đối với IELTS: sort theo score từ cao đến thấp
+          return (Number(b) || 0) - (Number(a) || 0);
+        } else {
+          // Đối với các trường hợp khác: sort theo tên exam
+          return a.localeCompare(b);
+        }
+      })
+      .map(([groupKey, items]) => ({
+        exam: groupKey,
         items: items.sort(
           (a, b) =>
             (Number(b.student.score) || 0) - (Number(a.student.score) || 0)
         ),
       }));
-  }, [filteredRecords]);
+  }, [filteredRecords, subAward]);
 
   // Lấy label năm học
   const findSchoolYearLabel = (syId) => {
@@ -262,7 +284,14 @@ const Detail = () => {
   const renderScore = (score, examName) => {
     const normalizedLabel = normalizeLabel(subAward.label);
 
-    if (normalizedLabel === "ielts" || normalizedLabel === "sat") {
+    if (normalizedLabel === "ielts") {
+      // Đảm bảo IELTS luôn hiển thị với 1 chữ số thập phân
+      const numericScore = parseFloat(score);
+      if (!isNaN(numericScore)) {
+        return numericScore.toFixed(1);
+      }
+      return score;
+    } else if (normalizedLabel === "sat") {
       return score;
     } else if (normalizedLabel === "ap") {
       return `${score}/5`;
