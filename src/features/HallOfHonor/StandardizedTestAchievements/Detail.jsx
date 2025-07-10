@@ -408,6 +408,12 @@ const Detail = () => {
                     ? findSchoolYearLabel(record.subAward.schoolYear)
                     : "";
                   const score = student.score || student.result || "";
+                  const examName =
+                    student.testName ||
+                    student.examName ||
+                    student.exam ||
+                    group.exam ||
+                    "N/A";
                   return (
                     <div
                       key={i}
@@ -447,9 +453,9 @@ const Detail = () => {
                         {student.student?.name}
                       </div>
                       <div className="text-white lg:text-[16px] text-xs font-semibold text-center">
-                        {group.exam} -{" "}
+                        {examName} -{" "}
                         <span className="text-[#F9D16F]">
-                          {renderScore(score, group.exam)}
+                          {renderScore(score, examName)}
                         </span>
                       </div>
                     </div>
