@@ -8,7 +8,6 @@ import i18n from "../../core/i18n";
 import Splide from "@splidejs/splide";
 import { AutoScroll } from "@splidejs/splide-extension-auto-scroll";
 import "@splidejs/splide/dist/css/splide.min.css";
-import "animate.css";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import useResponsive from "../../shared/hook/useResponsive";
