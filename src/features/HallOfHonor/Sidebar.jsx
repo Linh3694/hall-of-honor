@@ -27,7 +27,7 @@ const Sidebar = ({
       case "67c17afce8a7b376ad9986be":
         return "wisers-effort";
       case "6833dbe3edff5e164ffc1589":
-        return "standardized-test";
+        return "standardized-exam";
       default:
         return null;
     }

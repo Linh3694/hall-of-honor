@@ -15,7 +15,7 @@ function getCategoryIdFromName(name) {
       return "67c17aaee8a7b376ad9986bb";
     case "wisers-effort":
       return "67c17afce8a7b376ad9986be";
-    case "standardized-test":
+    case "standardized-exam":
       return "6833dbe3edff5e164ffc1589";
     default:
       return name; // fallback nếu truyền ID
