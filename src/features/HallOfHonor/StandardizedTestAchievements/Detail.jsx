@@ -264,26 +264,13 @@ const Detail = () => {
               : subAward.descriptionEng || subAward.description}
           </div>
         )}
-
-        {/* Hiển thị coverImage nếu có, giống category */}
-        {currentCategory.coverImage ? (
-          <div className="relative mb-4 mt-8 w-full max-h-[470px] mx-auto">
-            <img
-              src={`/halloffame/${normalizeLabel(subAward.label)}.png`}
-              alt={subAward.label}
-              className="w-full max-h-[470px] object-cover"
-            />
-          </div>
-        ) : (
-          // Nếu không có coverImage, hiển thị ảnh tĩnh subAward
-          <div className="flex justify-center mb-6">
-            <img
-              src={`/halloffame/${normalizeLabel(subAward.label)}.svg`}
-              alt={subAward.label}
-              className="w-[320px] h-[180px] object-contain rounded-xl"
-            />
-          </div>
-        )}
+        <div className="relative mb-4 mt-8 w-full max-h-[470px] mx-auto">
+          <img
+            src={`/halloffame/${normalizeLabel(subAward.label)}.png`}
+            alt={subAward.label}
+            className="w-full max-h-[470px] object-cover"
+          />
+        </div>
       </div>
 
       {/* Filter năm học và search */}
