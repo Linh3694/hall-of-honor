@@ -285,7 +285,7 @@ const resources = {
       highschool: "Trung học Phổ thông",
       category_67c1799de8a7b376ad998650: "Học sinh Danh dự",
       category_67c17afce8a7b376ad9986be: "Học sinh Nỗ lực",
-      category_67b5a7c84c93fbb31475ad47: "Lớp Danh dự",
+      category_67c17aaee8a7b376ad9986bb: "Lớp Danh dự",
       category_6833dbe3edff5e164ffc1589: "Thành tích các bài thi chuẩn hóa",
       category_67c17b7ae8a7b376ad9986c1: "Học bổng Tài năng",
       principalMessageHeader: "Thông điệp từ Hiệu trưởng",

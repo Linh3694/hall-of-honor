@@ -35,8 +35,7 @@ const ClassHonorContent = ({
   const [searchName, setSearchName] = useState("");
   const [openLevel, setOpenLevel] = useState(null);
 
-  // Ảnh lớp
-  const [classPhotos, setClassPhotos] = useState({});
+  // Ảnh lớp - không cần state nữa vì backend đã trả về trong aggregation
 
   // --- States cho Modal (khi click vào 1 lớp) ---
   const [showModal, setShowModal] = useState(false);
@@ -54,7 +53,7 @@ const ClassHonorContent = ({
     fetchCategories();
     fetchRecords();
     fetchSchoolYears();
-    fetchClassPhotos();
+    // Không cần fetchClassPhotos() nữa vì backend đã trả về classImage trong aggregation
   }, []);
 
   // 1) Tự động mở modal nếu URL có
@@ -89,7 +88,7 @@ const ClassHonorContent = ({
 
       setCategories(categoriesData);
     } catch (err) {
-      console.error("❌ Error fetching categories:", err);
+      // Error fetching categories
     }
   };
 
@@ -109,7 +108,7 @@ const ClassHonorContent = ({
 
       setRecords(recordsData);
     } catch (err) {
-      console.error("❌ Error fetching records:", err);
+      // Error fetching records
     }
   };
 
@@ -129,89 +128,11 @@ const ClassHonorContent = ({
 
       setSchoolYears(schoolYearsData);
     } catch (err) {
-      console.error("❌ Error fetching schoolYears:", err);
+      // Error fetching schoolYears
     }
   };
 
-  const fetchClassPhotos = async () => {
-    try {
-      // Lấy ảnh từ Photo model
-      const photosRes = await axios.get(`${API_URL}/photos/public`);
-      let photosData;
-      if (Array.isArray(photosRes.data)) {
-        photosData = photosRes.data;
-      } else if (photosRes.data.data && Array.isArray(photosRes.data.data)) {
-        photosData = photosRes.data.data;
-      } else {
-        photosData = [];
-      }
-
-      console.log("📸 Photos data:", photosData);
-      console.log("📸 Total photos:", photosData.length);
-
-      // Lấy ảnh từ Class model
-      const classImagesRes = await axios.get(
-        `${API_URL}/classes/images/public`
-      );
-      let classImagesData;
-      if (Array.isArray(classImagesRes.data)) {
-        classImagesData = classImagesRes.data;
-      } else if (
-        classImagesRes.data.data &&
-        Array.isArray(classImagesRes.data.data)
-      ) {
-        classImagesData = classImagesRes.data.data;
-      } else {
-        classImagesData = [];
-      }
-
-      console.log("📸 Class images data:", classImagesData);
-      console.log("📸 Total class images:", classImagesData.length);
-
-      const map = {};
-
-      // Ưu tiên ảnh từ Photo model
-      photosData.forEach((p) => {
-        if (p.class && p.class._id) {
-          // Normalize photoUrl to ensure it starts with /
-          const normalizedPhotoUrl =
-            p.photoUrl && !p.photoUrl.startsWith("/")
-              ? `/${p.photoUrl}`
-              : p.photoUrl;
-          map[p.class._id] = normalizedPhotoUrl;
-          console.log(
-            "📸 Mapped class photo:",
-            p.class.className,
-            "->",
-            normalizedPhotoUrl
-          );
-        }
-      });
-
-      // Bổ sung ảnh từ Class model nếu chưa có
-      classImagesData.forEach((cls) => {
-        if (!map[cls._id] && cls.classImage) {
-          // Normalize classImage to ensure it starts with /
-          const normalizedClassImage =
-            cls.classImage && !cls.classImage.startsWith("/")
-              ? `/${cls.classImage}`
-              : cls.classImage;
-          map[cls._id] = normalizedClassImage;
-          console.log(
-            "📸 Mapped class image:",
-            cls.className,
-            "->",
-            normalizedClassImage
-          );
-        }
-      });
-
-      console.log("📸 Final class photos map:", map);
-      setClassPhotos(map);
-    } catch (err) {
-      console.error("❌ Error fetchClassPhotos:", err);
-    }
-  };
+  // Không cần fetchClassPhotos nữa vì backend đã trả về classImage trong aggregation pipeline
 
   // --------------------------------------------------
   // 2) Khi category thay đổi => set view mặc định
@@ -837,7 +758,7 @@ const ClassHonorContent = ({
             onChange={(e) => setSearchName(e.target.value)}
           />
           <button
-            onClick={() => console.log("Searching:", searchName)}
+            onClick={() => {}}
             className="hidden absolute right-[-40px] w-[36px] h-[36px] bg-[#002855] rounded-full lg:flex items-center justify-center hover:bg-[#001F3F] transition"
           >
             <FaSearch className="text-white text-[18px]" />
@@ -861,36 +782,19 @@ const ClassHonorContent = ({
                   className="border  rounded-2xl p-5 shadow-sm bg-gradient-to-b from-[#03171c] to-[#182b55] rounded-[20px] flex flex-col items-center justify-center space-y-2 cursor-pointer"
                   onClick={() => handleOpenModalClass(record, cls)}
                 >
-                  {classPhotos[cls.classInfo?._id] ? (
+                  {cls.classInfo?.classImage ? (
                     <img
-                      src={`${BASE_URL}${classPhotos[cls.classInfo?._id]}`}
+                      src={`${BASE_URL}${cls.classInfo.classImage}`}
                       alt={`Ảnh lớp ${cls.classInfo?.className}`}
                       className="mt-2 w-full object-contain rounded-2xl"
                       onError={(e) => {
-                        console.error("❌ Image failed to load:", e.target.src);
-                        console.error("❌ Class ID:", cls.classInfo?._id);
-                        console.error(
-                          "❌ Photo URL:",
-                          classPhotos[cls.classInfo?._id]
-                        );
                         e.target.style.display = "none";
                       }}
-                      onLoad={() => {
-                        console.log(
-                          "✅ Image loaded successfully:",
-                          `${BASE_URL}${classPhotos[cls.classInfo?._id]}`
-                        );
-                      }}
+                      onLoad={() => {}}
                     />
                   ) : (
-                    <div className="text-xs italic text-[#f9d16f]">
-                      Chưa có ảnh
-                      {console.log(
-                        "❌ No photo for class:",
-                        cls.classInfo?.className,
-                        "ID:",
-                        cls.classInfo?._id
-                      )}
+                    <div className="text-xs italic text-[#f9d16f] p-4 text-center">
+                      Chưa có ảnh lớp {cls.classInfo?.className}
                     </div>
                   )}
                   <div className="text-[#f9d16f] shimmer-text text-[20px] font-bold">
@@ -953,44 +857,19 @@ const ClassHonorContent = ({
                             className="border rounded-[20px] shadow-sm p-5 bg-gradient-to-b from-[#03171c] to-[#182b55] flex flex-col items-center justify-center space-y-2 cursor-pointer"
                             onClick={() => handleOpenModalClass(record, cls)}
                           >
-                            {classPhotos[cls.classInfo?._id] ? (
+                            {cls.classInfo?.classImage ? (
                               <img
-                                src={`${BASE_URL}${
-                                  classPhotos[cls.classInfo?._id]
-                                }`}
+                                src={`${BASE_URL}${cls.classInfo.classImage}`}
                                 alt={`Ảnh lớp ${cls.classInfo?.className}`}
                                 className="mt-2 w-full object-contain rounded-2xl"
                                 onError={(e) => {
-                                  console.error(
-                                    "❌ Image failed to load:",
-                                    e.target.src
-                                  );
-                                  console.error(
-                                    "❌ Class ID:",
-                                    cls.classInfo?._id
-                                  );
-                                  console.error(
-                                    "❌ Photo URL:",
-                                    classPhotos[cls.classInfo?._id]
-                                  );
                                   e.target.style.display = "none";
                                 }}
-                                onLoad={() => {
-                                  console.log(
-                                    "✅ Image loaded successfully:",
-                                    `${BASE_URL}${classPhotos[cls.classInfo?._id]}`
-                                  );
-                                }}
+                                onLoad={() => {}}
                               />
                             ) : (
-                              <div className="text-xs italic text-[#f9d16f]">
-                                Chưa có ảnh
-                                {console.log(
-                                  "❌ No photo for class:",
-                                  cls.classInfo?.className,
-                                  "ID:",
-                                  cls.classInfo?._id
-                                )}
+                              <div className="text-xs italic text-[#f9d16f] p-4 text-center">
+                                Chưa có ảnh lớp {cls.classInfo?.className}
                               </div>
                             )}
                             <div className="text-[#f9d16f] shimmer-text text-[20px] font-bold">
@@ -1032,42 +911,18 @@ const ClassHonorContent = ({
             <div className="w-full flex flex-col lg:flex-row gap-4">
               {/* Ảnh lớp */}
               <div className="w-full relative flex items-center justify-center">
-                {classPhotos[modalClass.classInfo?._id] ? (
+                {modalClass.classInfo?.classImage ? (
                   <img
-                    src={`${BASE_URL}${classPhotos[modalClass.classInfo?._id]}`}
+                    src={`${BASE_URL}${modalClass.classInfo.classImage}`}
                     alt="Class"
                     className="relative z-10 w-full h-auto object-cover rounded-[15px] shadow-md"
-                    onError={(e) => {
-                      console.error(
-                        "❌ Modal image failed to load:",
-                        e.target.src
-                      );
-                      console.error(
-                        "❌ Modal class ID:",
-                        modalClass.classInfo?._id
-                      );
-                      console.error(
-                        "❌ Modal photo URL:",
-                        classPhotos[modalClass.classInfo?._id]
-                      );
-                      e.target.style.display = "none";
-                    }}
-                    onLoad={() => {
-                      console.log(
-                        "✅ Modal image loaded successfully:",
-                        `${BASE_URL}${classPhotos[modalClass.classInfo?._id]}`
-                      );
-                    }}
+                    onLoad={() => {}}
                   />
                 ) : (
                   <div className="relative z-10 w-[518px] h-[377px] bg-gray-200 flex items-center justify-center rounded-lg shadow-md">
-                    <span className="text-xs text-gray-400">Chưa có ảnh</span>
-                    {console.log(
-                      "❌ No photo for modal class:",
-                      modalClass.classInfo?.className,
-                      "ID:",
-                      modalClass.classInfo?._id
-                    )}
+                    <span className="text-xs text-gray-400">
+                      Chưa có ảnh lớp {modalClass.classInfo?.className}
+                    </span>
                   </div>
                 )}
               </div>
