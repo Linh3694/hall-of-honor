@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { FaSearch, FaChevronDown, FaChevronUp } from "react-icons/fa";
+import { FaSearch } from "react-icons/fa";
 import { API_URL, BASE_URL } from "../../../core/config";
 import axios from "axios";
 
@@ -15,7 +15,7 @@ function getCategoryIdFromName(name) {
       return "67c17aaee8a7b376ad9986bb";
     case "wisers-effort":
       return "67c17afce8a7b376ad9986be";
-    case "standardized-exam":
+    case "standardized-test":
       return "6833dbe3edff5e164ffc1589";
     default:
       return name; // fallback nếu truyền ID
@@ -31,7 +31,6 @@ const Detail = () => {
   const [selectedSchoolYearId, setSelectedSchoolYearId] = useState("");
   const [searchName, setSearchName] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [expandedGroups, setExpandedGroups] = useState({});
 
   // Fetch data
   useEffect(() => {
@@ -210,107 +209,34 @@ const Detail = () => {
     }, []);
   }, [recordsOfSubAward, selectedSchoolYearId, searchName]);
 
-  // Nhóm theo Exam hoặc Score (tùy thuộc vào subAward), sort theo Score từ cao đến thấp
+  // Nhóm theo Exam, sort theo Score tăng dần
   const groupedByExam = useMemo(() => {
-    if (!subAward) return [];
-
-    const isIelts = normalizeLabel(subAward.label) === "ielts";
-    const groups = {};
-
+    const examGroups = {};
     filteredRecords.forEach((record) => {
       record.students.forEach((student) => {
-        let groupKey;
-
-        if (isIelts) {
-          // Đối với IELTS: group theo score
-          groupKey = student.score || student.result || "Chưa có điểm";
-        } else {
-          // Đối với các trường hợp khác: group theo exam
-          groupKey =
-            student.testName || student.examName || student.exam || "Khác";
-        }
-
-        if (!groups[groupKey]) groups[groupKey] = [];
-        groups[groupKey].push({ record, student });
+        const exam =
+          student.testName || student.examName || student.exam || "Khác";
+        if (!examGroups[exam]) examGroups[exam] = [];
+        examGroups[exam].push({ record, student });
       });
     });
-
-    // Chuyển thành mảng và sort
-    return Object.entries(groups)
-      .sort(([a], [b]) => {
-        if (isIelts) {
-          // Đối với IELTS: sort theo score từ cao đến thấp
-          return (Number(b) || 0) - (Number(a) || 0);
-        } else {
-          // Đối với các trường hợp khác: sort theo tên exam
-          return a.localeCompare(b);
-        }
-      })
-      .map(([groupKey, items]) => ({
-        exam: groupKey,
+    // Chuyển thành mảng và sort theo tên exam
+    return Object.entries(examGroups)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([exam, items]) => ({
+        exam,
         items: items.sort(
           (a, b) =>
-            (Number(b.student.score) || 0) - (Number(a.student.score) || 0)
+            (Number(a.student.score) || 0) - (Number(b.student.score) || 0)
         ),
       }));
-  }, [filteredRecords, subAward]);
+  }, [filteredRecords]);
 
   // Lấy label năm học
   const findSchoolYearLabel = (syId) => {
     const syDoc = schoolYears.find((sy) => String(sy._id) === String(syId));
-    const fullYear = syDoc?.code || syDoc?.name || "";
-
-    // Rút ngắn từ "2024-2025" thành "24-25"
-    const yearPattern = /(\d{4})-(\d{4})/;
-    const match = fullYear.match(yearPattern);
-    if (match) {
-      const startYear = match[1].slice(-2); // Lấy 2 chữ số cuối
-      const endYear = match[2].slice(-2); // Lấy 2 chữ số cuối
-      return `${startYear}-${endYear}`;
-    }
-
-    return fullYear;
+    return syDoc?.code || syDoc?.name || "";
   };
-
-  // Toggle function cho expand/collapse groups
-  const toggleGroup = (examName) => {
-    setExpandedGroups((prev) => ({
-      ...prev,
-      [examName]: !prev[examName],
-    }));
-  };
-
-  // Function để render score dựa trên subAward label
-  const renderScore = (score, examName) => {
-    const normalizedLabel = normalizeLabel(subAward.label);
-
-    if (normalizedLabel === "ielts") {
-      // Đảm bảo IELTS luôn hiển thị với 1 chữ số thập phân
-      const numericScore = parseFloat(score);
-      if (!isNaN(numericScore)) {
-        return numericScore.toFixed(1);
-      }
-      return score;
-    } else if (normalizedLabel === "sat") {
-      return score;
-    } else if (normalizedLabel === "ap") {
-      return `${score}/5`;
-    } else {
-      // Default case - có thể customize thêm
-      return score;
-    }
-  };
-
-  // Khởi tạo tất cả groups là expanded by default
-  useEffect(() => {
-    if (groupedByExam.length > 0) {
-      const initialExpanded = {};
-      groupedByExam.forEach((group) => {
-        initialExpanded[group.exam] = true;
-      });
-      setExpandedGroups(initialExpanded);
-    }
-  }, [groupedByExam]);
 
   if (isLoading) return <div className="text-center py-10">{t("loading")}</div>;
   if (!subAward)
@@ -321,7 +247,7 @@ const Detail = () => {
     );
 
   return (
-    <div className="mx-auto px-4 py-10">
+    <div className="max-w-6xl mx-auto px-4 py-10">
       {/* Tiêu đề và mô tả */}
       <div className="text-center mb-8">
         <div className="text-[40px] font-extrabold uppercase text-[#F05023] mb-2">
@@ -338,13 +264,26 @@ const Detail = () => {
               : subAward.descriptionEng || subAward.description}
           </div>
         )}
-        <div className="relative mb-4 mt-8 w-full max-h-[470px] mx-auto">
-          <img
-            src={`/halloffame/${normalizeLabel(subAward.label)}.png`}
-            alt={subAward.label}
-            className="w-full max-h-[470px] object-cover"
-          />
-        </div>
+
+        {/* Hiển thị coverImage nếu có, giống category */}
+        {currentCategory.coverImage ? (
+          <div className="relative mb-4 mt-8 w-full max-h-[470px] mx-auto">
+            <img
+              src={`/halloffame/${normalizeLabel(subAward.label)}.png`}
+              alt={subAward.label}
+              className="w-full max-h-[470px] object-cover"
+            />
+          </div>
+        ) : (
+          // Nếu không có coverImage, hiển thị ảnh tĩnh subAward
+          <div className="flex justify-center mb-6">
+            <img
+              src={`/halloffame/${normalizeLabel(subAward.label)}.svg`}
+              alt={subAward.label}
+              className="w-[320px] h-[180px] object-contain rounded-xl"
+            />
+          </div>
+        )}
       </div>
 
       {/* Filter năm học và search */}
@@ -379,90 +318,51 @@ const Detail = () => {
       <div className="space-y-10">
         {groupedByExam.map((group, idx) => (
           <div key={idx}>
-            <div
-              className="text-2xl font-bold text-[#002855] mb-4 border-b pb-2 flex items-center justify-between cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors"
-              onClick={() => toggleGroup(group.exam)}
-            >
-              <span>{group.exam}</span>
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-500">
-                  ({group.items.length} {t("students", "học sinh")})
-                </span>
-                {expandedGroups[group.exam] ? (
-                  <FaChevronUp className="text-lg" />
-                ) : (
-                  <FaChevronDown className="text-lg" />
-                )}
-              </div>
+            <div className="text-2xl font-bold text-[#002855] mb-4 border-b pb-2">
+              {group.exam}
             </div>
-
-            {expandedGroups[group.exam] && (
-              <div className="grid justify-items-center xl:grid-cols-5 lg:grid-cols-4 md:grid-cols-3 grid-cols-2 gap-x-[8px] gap-y-[8px] lg:gap-x-[30px] lg:gap-y-[35px]">
-                {group.items.map((item, i) => {
-                  const { record, student } = item;
-                  const className =
-                    student.currentClass?.name ||
-                    student.currentClass?.className ||
-                    t("noClass", "Chưa cập nhật lớp");
-                  const schoolYearLabel = record.subAward?.schoolYear
-                    ? findSchoolYearLabel(record.subAward.schoolYear)
-                    : "";
-                  const score = student.score || student.result || "";
-                  const examName =
-                    student.testName ||
-                    student.examName ||
-                    student.exam ||
-                    group.exam ||
-                    "N/A";
-                  return (
-                    <div
-                      key={i}
-                      className="lg:h-[474px] lg:w-[258px] w-[180px] h-[270px] border rounded-[20px] shadow-sm lg:py-[20px] lg:px-[25px] px-[15px] py-[15px] bg-gradient-to-b from-[#03171c] to-[#182b55] flex flex-col items-center justify-center space-y-2"
-                    >
-                      <div className="lg:h-[260px] lg:w-[208px] w-[208px] h-[160px] relative mb-2">
-                        {student.photo?.photoUrl ? (
-                          <img
-                            src={`${BASE_URL}${student.photo.photoUrl}`}
-                            alt="Student"
-                            className="w-full h-full object-cover object-top rounded-[15px]"
-                            onError={(e) => {
-                              e.target.style.display = "none";
-                              const fallbackDiv =
-                                e.target.parentElement.querySelector(
-                                  ".fallback-photo"
-                                );
-                              if (fallbackDiv)
-                                fallbackDiv.style.display = "flex";
-                            }}
-                          />
-                        ) : null}
-                        <div
-                          className="fallback-photo absolute inset-0 bg-gray-200 flex items-center justify-center rounded-[15px] text-xs italic text-gray-400"
-                          style={{
-                            display: student.photo?.photoUrl ? "none" : "flex",
-                          }}
-                        >
-                          {t("noPhoto", "Chưa có ảnh")}
-                        </div>
+            <div className="grid justify-items-center xl:grid-cols-5 lg:grid-cols-4 md:grid-cols-3 grid-cols-2 gap-x-[8px] gap-y-[8px] lg:gap-x-[30px] lg:gap-y-[35px]">
+              {group.items.map((item, i) => {
+                const { record, student } = item;
+                const className =
+                  student.currentClass?.name ||
+                  student.currentClass?.className ||
+                  t("noClass", "Chưa cập nhật lớp");
+                const schoolYearLabel = record.subAward?.schoolYear
+                  ? findSchoolYearLabel(record.subAward.schoolYear)
+                  : "";
+                const score = student.score || student.result || "";
+                return (
+                  <div
+                    key={i}
+                    className="lg:h-[400px] lg:w-[250px] w-[180px] h-[350px] border rounded-[30px] shadow-sm lg:py-[30px] lg:px-[25px] px-[15px] py-[20px] bg-gradient-to-b from-[#03171c] to-[#182b55] flex flex-col items-center justify-center space-y-4"
+                  >
+                    {student.photo?.photoUrl ? (
+                      <img
+                        src={`${BASE_URL}${student.photo.photoUrl}`}
+                        alt="Student"
+                        className="h-[260px] w-[208px] object-cover object-top rounded-2xl  shadow-md mb-2"
+                      />
+                    ) : (
+                      <div className="h-[150px] w-[150px] flex items-center justify-center rounded-full bg-gray-200 text-xs italic text-gray-400 mb-2">
+                        {t("noPhoto", "Chưa có ảnh")}
                       </div>
-                      <div className="h-[20px] w-[208px] lg:text-[16px] text-xs lg:pb-[15px] pt-[8px] pb-[10px] font-semibold text-white text-center">
-                        {t("classPrefix")} {className} - {t("schoolYearAbbr")}{" "}
-                        {schoolYearLabel}
-                      </div>
-                      <div className="h-[60px] lg:w-[208px] w-[150px] text-[#f9d16f] lg:text-[18px] text-[14px] font-bold text-center">
-                        {student.student?.name}
-                      </div>
-                      <div className="text-white lg:text-[16px] text-xs font-semibold text-center">
-                        {examName} -{" "}
-                        <span className="text-[#F9D16F]">
-                          {renderScore(score, examName)}
-                        </span>
-                      </div>
+                    )}
+                    <div className="text-white text-[14px] font-semibold text-center">
+                      {t("classPrefix")} {className} - {t("schoolYearAbbr")}{" "}
+                      {schoolYearLabel}
                     </div>
-                  );
-                })}
-              </div>
-            )}
+                    <div className="text-[#F9D16F] text-[22px] font-bold text-center">
+                      {student.student?.name}
+                    </div>
+                    <div className="text-white text-[18px] font-semibold text-center">
+                      {group.exam} -{" "}
+                      <span className="text-[#F9D16F]">{score}/5</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         ))}
         {groupedByExam.length === 0 && (

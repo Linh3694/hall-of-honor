@@ -8,6 +8,7 @@ import i18n from "../../core/i18n";
 import Splide from "@splidejs/splide";
 import { AutoScroll } from "@splidejs/splide-extension-auto-scroll";
 import "@splidejs/splide/dist/css/splide.min.css";
+import "animate.css";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import useResponsive from "../../shared/hook/useResponsive";
@@ -21,7 +22,7 @@ const HallofFame = () => {
     const newLanguage = i18n.language === "vi" ? "en" : "vi";
     i18n.changeLanguage(newLanguage);
   };
-  // 1. Thêm state mới ngay sau các state đã có (ví dụ, sau const [quoteIndex, setQuoteIndex] = useState(null);) THÊM 1 chút code để chuyển đổi ngôn ngữ
+  // 1. Thêm state mới ngay sau các state đã có (ví dụ, sau const [quoteIndex, setQuoteIndex] = useState(null);)
   const [selectedStudent, setSelectedStudent] = useState(null);
   const { width, isMobile } = useResponsive();
   const isMobileView = isMobile; // hoặc: width < 1024;
@@ -473,7 +474,7 @@ const HallofFame = () => {
         {/* Logo/nút khác bên phải */}
         <div className="flex flex-row gap-10 items-center">
           <img
-            src={`/halloffame/HJ-white.png`}
+            src={`/HJ-white.png`}
             className="h-12 hidden md:block"
             alt="Happy Journey"
           />

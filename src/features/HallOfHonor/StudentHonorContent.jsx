@@ -55,9 +55,7 @@ const StudentHonorContent = ({
 
     const foundRecord = records.find((r) => r._id === recordIdParam);
     if (!foundRecord) {
-      if (categoryName) {
-        navigate(`/detail/${categoryName}`);
-      }
+      navigate(`/hall-of-honor/detail/${categoryName}`);
       return;
     }
 
@@ -69,9 +67,7 @@ const StudentHonorContent = ({
       }
     }
     if (!foundStudent) {
-      if (categoryName) {
-        navigate(`/detail/${categoryName}`);
-      }
+      navigate(`/hall-of-honor/detail/${categoryName}`);
       return;
     }
 
@@ -123,12 +119,6 @@ const StudentHonorContent = ({
       }
 
       setRecords(recordsData);
-
-      recordsData.forEach((record, index) => {
-        if (index < 2) {
-          // Log first 2 records
-        }
-      });
     } catch (err) {
       console.error("❌ Error fetching records:", err);
     } finally {
@@ -480,12 +470,9 @@ const StudentHonorContent = ({
     setModalRecord(record);
     setModalStudent(student);
     setShowModal(true);
-
-    if (categoryName) {
-      navigate(
-        `/detail/${categoryName}/student/${record._id}/${student.student?._id}`
-      );
-    }
+    navigate(
+      `/detail/${categoryName}/student/${record._id}/${student.student?._id}`
+    );
   };
 
   // Hàm đóng modal
@@ -494,10 +481,7 @@ const StudentHonorContent = ({
     setModalRecord(null);
     setModalStudent(null);
     setModalClass(null);
-
-    if (categoryName) {
-      navigate(`/detail/${categoryName}`);
-    }
+    navigate(`/detail/${categoryName}`);
   };
 
   // Hàm phụ: trả về text cho danh hiệu (VD: "Học sinh Danh dự - Tháng 8"), bilingual logic
@@ -632,7 +616,7 @@ const StudentHonorContent = ({
           <div className="relative mb-4 mt-8 w-full max-h-[470px] mx-auto">
             {/* Lớp dưới cùng: ảnh coverImage */}
             <img
-              src={`${BASE_URL}/${currentCategory.coverImage}`}
+              src={`${BASE_URL}${currentCategory.coverImage}`}
               alt="Cover"
               className="w-full max-h-[470px] object-cover"
               onError={(e) => {
@@ -777,23 +761,17 @@ const StudentHonorContent = ({
                   className="lg:h-[400px] lg:w-[258px] w-[180px] h-[270px] border rounded-[20px] shadow-sm lg:py-[20px] lg:px-[25px] px-[15px] py-[15px] bg-gradient-to-b from-[#03171c] to-[#182b55] flex flex-col items-center justify-center space-y-2 cursor-pointer"
                   onClick={() => handleOpenModal(record, student)}
                 >
-                  <div className="lg:h-[260px] lg:w-[208px] w-[208px] h-[160px] relative">
-                    {student.photo?.photoUrl ? (
-                      <img
-                        src={`${BASE_URL}${student.photo.photoUrl}`}
-                        alt="Student"
-                        className="w-full h-full object-cover object-top rounded-[15px]"
-                      />
-                    ) : null}
-                    <div
-                      className="fallback-photo absolute inset-0 bg-gray-200 flex items-center justify-center rounded-[15px] text-xs italic text-gray-400"
-                      style={{
-                        display: student.photo?.photoUrl ? "none" : "flex",
-                      }}
-                    >
+                  {student.photo?.photoUrl ? (
+                    <img
+                      src={`${BASE_URL}/${student.photo.photoUrl}`}
+                      alt="Student"
+                      className="lg:h-[260px] lg:w-[208px] w-[208px] h-[160px] object-cover object-top rounded-[15px]"
+                    />
+                  ) : (
+                    <div className="text-xs italic text-gray-400">
                       {t("noPhoto", "Chưa có ảnh")}
                     </div>
-                  </div>
+                  )}
                   <div className="h-[20px] w-[208px] lg:text-[16px] text-xs lg:pt-[13px] lg:pb-[15px] pt-[8px] pb-[10px] font-semibold text-white py-2 text-center">
                     {t("classLabel", "Lớp")}{" "}
                     {student.currentClass?.name ||
@@ -854,35 +832,17 @@ const StudentHonorContent = ({
                             className="lg:h-[400px] lg:w-[258px] w-[180px] h-[270px] border rounded-[20px] shadow-sm lg:py-[20px] lg:px-[25px] px-[15px] py-[15px] bg-gradient-to-b from-[#03171c] to-[#182b55] flex flex-col items-center justify-center space-y-2 cursor-pointer"
                             onClick={() => handleOpenModal(record, student)}
                           >
-                            <div className="lg:h-[260px] lg:w-[208px] w-[140px] h-[180px] relative">
-                              {student.photo?.photoUrl ? (
-                                <img
-                                  src={`${BASE_URL}${student.photo.photoUrl}`}
-                                  alt="Student"
-                                  className="w-full h-full object-cover object-top rounded-[15px]"
-                                  onError={(e) => {
-                                    e.target.style.display = "none";
-                                    const fallbackDiv =
-                                      e.target.parentElement.querySelector(
-                                        ".fallback-photo"
-                                      );
-                                    if (fallbackDiv)
-                                      fallbackDiv.style.display = "flex";
-                                  }}
-                                  onLoad={(e) => {}}
-                                />
-                              ) : null}
-                              <div
-                                className="fallback-photo absolute inset-0 bg-gray-200 flex items-center justify-center rounded-[15px] text-xs italic text-gray-400"
-                                style={{
-                                  display: student.photo?.photoUrl
-                                    ? "none"
-                                    : "flex",
-                                }}
-                              >
+                            {student.photo?.photoUrl ? (
+                              <img
+                                src={`${BASE_URL}/${student.photo.photoUrl}`}
+                                alt="Student"
+                                className="lg:h-[260px] lg:w-[208px] w-[208px] h-[160px] object-cover object-top rounded-[15px]"
+                              />
+                            ) : (
+                              <div className="text-xs italic text-gray-400">
                                 {t("noPhoto", "Chưa có ảnh")}
                               </div>
-                            </div>
+                            )}
                             <div className="h-[20px] w-[208px] lg:text-[16px] text-xs lg:pt-[13px] lg:pb-[15px] pt-[8px] pb-[10px] font-semibold text-white py-2 text-center">
                               {t("classLabel", "Lớp")}{" "}
                               {student.currentClass?.name ||
@@ -926,34 +886,19 @@ const StudentHonorContent = ({
             <div className="flex flex-col lg:flex-row lg:space-x-6 space-y-6 lg:space-y-0 ">
               {/* Khung ảnh với nền lệch */}
               <div className="relative flex-shrink-0 px-[25px] lg:px-0">
-                <div className="relative lg:w-[281px] lg:h-[352px] w-full h-[320px]">
-                  {modalStudent.photo?.photoUrl ? (
-                    <img
-                      src={`${BASE_URL}${modalStudent.photo.photoUrl}`}
-                      alt="Student"
-                      className="relative z-10 w-full h-full object-cover object-top rounded-[15px] shadow-md"
-                      onError={(e) => {
-                        e.target.style.display = "none";
-                        const fallbackDiv =
-                          e.target.parentElement.querySelector(
-                            ".modal-fallback-photo"
-                          );
-                        if (fallbackDiv) fallbackDiv.style.display = "flex";
-                      }}
-                      onLoad={(e) => {}}
-                    />
-                  ) : null}
-                  <div
-                    className="modal-fallback-photo absolute inset-0 z-10 bg-gray-200 flex items-center justify-center rounded-[15px] shadow-md"
-                    style={{
-                      display: modalStudent.photo?.photoUrl ? "none" : "flex",
-                    }}
-                  >
+                {modalStudent.photo?.photoUrl ? (
+                  <img
+                    src={`${BASE_URL}/${modalStudent.photo.photoUrl}`}
+                    alt="Student"
+                    className="relative z-10 lg:w-[281px] lg:h-[352px] w-full h-[320px] items-center object-cover object-top rounded-[15px] shadow-md "
+                  />
+                ) : (
+                  <div className="relative z-10 lg:w-[322px] lg:h-[428px] w-[150px] h-[200px] bg-gray-200 flex items-center justify-center rounded-lg shadow-md">
                     <span className="text-xs text-gray-400">
                       {t("noPhoto", "Chưa có ảnh")}
                     </span>
                   </div>
-                </div>
+                )}
               </div>
 
               {/* Phần thông tin học sinh */}

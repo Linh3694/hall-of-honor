@@ -35,7 +35,8 @@ const ClassHonorContent = ({
   const [searchName, setSearchName] = useState("");
   const [openLevel, setOpenLevel] = useState(null);
 
-  // Ảnh lớp - không cần state nữa vì backend đã trả về trong aggregation
+  // Ảnh lớp
+  const [classPhotos, setClassPhotos] = useState({});
 
   // --- States cho Modal (khi click vào 1 lớp) ---
   const [showModal, setShowModal] = useState(false);
@@ -53,7 +54,7 @@ const ClassHonorContent = ({
     fetchCategories();
     fetchRecords();
     fetchSchoolYears();
-    // Không cần fetchClassPhotos() nữa vì backend đã trả về classImage trong aggregation
+    fetchClassPhotos();
   }, []);
 
   // 1) Tự động mở modal nếu URL có
@@ -88,7 +89,7 @@ const ClassHonorContent = ({
 
       setCategories(categoriesData);
     } catch (err) {
-      // Error fetching categories
+      console.error("❌ Error fetching categories:", err);
     }
   };
 
@@ -108,7 +109,7 @@ const ClassHonorContent = ({
 
       setRecords(recordsData);
     } catch (err) {
-      // Error fetching records
+      console.error("❌ Error fetching records:", err);
     }
   };
 
@@ -128,11 +129,36 @@ const ClassHonorContent = ({
 
       setSchoolYears(schoolYearsData);
     } catch (err) {
-      // Error fetching schoolYears
+      console.error("❌ Error fetching schoolYears:", err);
     }
   };
 
-  // Không cần fetchClassPhotos nữa vì backend đã trả về classImage trong aggregation pipeline
+  const fetchClassPhotos = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/photos`);
+
+      // Handle both response formats: direct array or {data: array}
+      let photosData;
+      if (Array.isArray(res.data)) {
+        photosData = res.data;
+      } else if (res.data.data && Array.isArray(res.data.data)) {
+        photosData = res.data.data;
+      } else {
+        photosData = [];
+      }
+
+      const map = {};
+      photosData.forEach((p) => {
+        // p.class có dạng { _id, className }, ta lấy p.class._id làm key
+        if (p.class && p.class._id) {
+          map[p.class._id] = p.photoUrl;
+        }
+      });
+      setClassPhotos(map);
+    } catch (err) {
+      console.error("❌ Error fetchClassPhotos:", err);
+    }
+  };
 
   // --------------------------------------------------
   // 2) Khi category thay đổi => set view mặc định
@@ -524,22 +550,16 @@ const ClassHonorContent = ({
     setModalRecord(record);
     setModalClass(cls);
     setShowModal(true);
-
-    if (categoryName) {
-      navigate(
-        `/detail/${categoryName}/class/${record._id}/${cls.classInfo?._id}`
-      );
-    }
+    navigate(
+      `/hall-of-honor/detail/${categoryName}/class/${record._id}/${cls.classInfo?._id}`
+    );
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
     setModalRecord(null);
     setModalClass(null);
-
-    if (categoryName) {
-      navigate(`/detail/${categoryName}`);
-    }
+    navigate(`/hall-of-honor/detail/${categoryName}`);
   };
 
   const findSchoolYearLabel = (syId) => {
@@ -637,7 +657,7 @@ const ClassHonorContent = ({
           <div className="relative mb-4 mt-8 w-full lg:w-[1410px] max-h-[470px] mx-auto">
             {/* Lớp dưới cùng: ảnh coverImage */}
             <img
-              src={`${BASE_URL}/${currentCategory.coverImage}`}
+              src={`${BASE_URL}${currentCategory.coverImage}`}
               alt="Cover"
               className="w-full h-auto object-cover"
             />
@@ -758,7 +778,7 @@ const ClassHonorContent = ({
             onChange={(e) => setSearchName(e.target.value)}
           />
           <button
-            onClick={() => {}}
+            onClick={() => console.log("Searching:", searchName)}
             className="hidden absolute right-[-40px] w-[36px] h-[36px] bg-[#002855] rounded-full lg:flex items-center justify-center hover:bg-[#001F3F] transition"
           >
             <FaSearch className="text-white text-[18px]" />
@@ -782,19 +802,15 @@ const ClassHonorContent = ({
                   className="border  rounded-2xl p-5 shadow-sm bg-gradient-to-b from-[#03171c] to-[#182b55] rounded-[20px] flex flex-col items-center justify-center space-y-2 cursor-pointer"
                   onClick={() => handleOpenModalClass(record, cls)}
                 >
-                  {cls.classInfo?.classImage ? (
+                  {classPhotos[cls.classInfo?._id] ? (
                     <img
-                      src={`${BASE_URL}${cls.classInfo.classImage}`}
+                      src={`${BASE_URL}${classPhotos[cls.classInfo?._id]}`}
                       alt={`Ảnh lớp ${cls.classInfo?.className}`}
                       className="mt-2 w-full object-contain rounded-2xl"
-                      onError={(e) => {
-                        e.target.style.display = "none";
-                      }}
-                      onLoad={() => {}}
                     />
                   ) : (
-                    <div className="text-xs italic text-[#f9d16f] p-4 text-center">
-                      Chưa có ảnh lớp {cls.classInfo?.className}
+                    <div className="text-xs italic text-[#f9d16f]">
+                      Chưa có ảnh
                     </div>
                   )}
                   <div className="text-[#f9d16f] shimmer-text text-[20px] font-bold">
@@ -857,19 +873,17 @@ const ClassHonorContent = ({
                             className="border rounded-[20px] shadow-sm p-5 bg-gradient-to-b from-[#03171c] to-[#182b55] flex flex-col items-center justify-center space-y-2 cursor-pointer"
                             onClick={() => handleOpenModalClass(record, cls)}
                           >
-                            {cls.classInfo?.classImage ? (
+                            {classPhotos[cls.classInfo?._id] ? (
                               <img
-                                src={`${BASE_URL}${cls.classInfo.classImage}`}
+                                src={`${BASE_URL}${
+                                  classPhotos[cls.classInfo?._id]
+                                }`}
                                 alt={`Ảnh lớp ${cls.classInfo?.className}`}
                                 className="mt-2 w-full object-contain rounded-2xl"
-                                onError={(e) => {
-                                  e.target.style.display = "none";
-                                }}
-                                onLoad={() => {}}
                               />
                             ) : (
-                              <div className="text-xs italic text-[#f9d16f] p-4 text-center">
-                                Chưa có ảnh lớp {cls.classInfo?.className}
+                              <div className="text-xs italic text-[#f9d16f]">
+                                Chưa có ảnh
                               </div>
                             )}
                             <div className="text-[#f9d16f] shimmer-text text-[20px] font-bold">
@@ -911,18 +925,15 @@ const ClassHonorContent = ({
             <div className="w-full flex flex-col lg:flex-row gap-4">
               {/* Ảnh lớp */}
               <div className="w-full relative flex items-center justify-center">
-                {modalClass.classInfo?.classImage ? (
+                {classPhotos[modalClass.classInfo?._id] ? (
                   <img
-                    src={`${BASE_URL}${modalClass.classInfo.classImage}`}
+                    src={`${BASE_URL}${classPhotos[modalClass.classInfo?._id]}`}
                     alt="Class"
                     className="relative z-10 w-full h-auto object-cover rounded-[15px] shadow-md"
-                    onLoad={() => {}}
                   />
                 ) : (
                   <div className="relative z-10 w-[518px] h-[377px] bg-gray-200 flex items-center justify-center rounded-lg shadow-md">
-                    <span className="text-xs text-gray-400">
-                      Chưa có ảnh lớp {modalClass.classInfo?.className}
-                    </span>
+                    <span className="text-xs text-gray-400">Chưa có ảnh</span>
                   </div>
                 )}
               </div>

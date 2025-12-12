@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams, Outlet } from "react-router-dom";
 import i18n from "../../core/i18n";
+import { CDN_URL } from "../../core/config";
 import Sidebar from "./Sidebar";
 import StudentHonorContent from "./StudentHonorContent";
 import ClassHonorContent from "./ClassHonorContent";
@@ -54,7 +55,7 @@ function HallOfFamePublicPage() {
         return "67c17aaee8a7b376ad9986bb";
       case "wisers-effort":
         return "67c17afce8a7b376ad9986be";
-      case "standardized-exam":
+      case "standardized-test":
         return "6833dbe3edff5e164ffc1589";
       default:
         return null;
@@ -73,7 +74,7 @@ function HallOfFamePublicPage() {
       case "67c17afce8a7b376ad9986be":
         return "wisers-effort";
       case "6833dbe3edff5e164ffc1589":
-        return "standardized-exam";
+        return "standardized-test";
       default:
         return null;
     }
@@ -95,43 +96,20 @@ function HallOfFamePublicPage() {
     const categoryName = getCategoryNameFromId(selectedCategoryId);
     if (!categoryName) return;
 
+    // Nếu đang ở trang detail subAward thì không redirect
+    if (tenSubAward) return;
+
     // Nếu URL đã ở trang chi tiết (có recordId kèm theo studentId hoặc classId) thì giữ nguyên
     if (recordId && (studentId || classId)) {
       return;
     }
 
-    // Nếu đang ở trang detail subAward, chỉ navigate nếu category khác nhau
-    if (tenSubAward && category === categoryName) {
-      return;
-    }
+    const timeoutId = setTimeout(() => {
+      navigate(`/detail/${categoryName}`, { replace: true });
+    }, 0);
 
-    // Nếu đang ở URL khác với category được chọn, thì navigate
-    if (category !== categoryName) {
-      const timeoutId = setTimeout(() => {
-        navigate(`/detail/${categoryName}`, { replace: true });
-      }, 0);
-
-      return () => clearTimeout(timeoutId);
-    }
-  }, [
-    selectedCategoryId,
-    navigate,
-    recordId,
-    studentId,
-    classId,
-    tenSubAward,
-    category,
-  ]);
-
-  // Đảm bảo selectedCategoryId luôn sync với category từ URL
-  useEffect(() => {
-    if (!tenSubAward && category) {
-      const categoryId = getCategoryIdFromName(category);
-      if (categoryId && selectedCategoryId !== categoryId) {
-        setSelectedCategoryId(categoryId);
-      }
-    }
-  }, [category, tenSubAward, selectedCategoryId]);
+    return () => clearTimeout(timeoutId);
+  }, [selectedCategoryId, navigate, recordId, studentId, classId, tenSubAward]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
