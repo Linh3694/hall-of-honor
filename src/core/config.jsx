@@ -1,6 +1,7 @@
 // Updated to use Frappe API endpoints
 export const API_URL =
-  import.meta.env.VITE_API_URL || "https://admin.sis.wellspring.edu.vn/api/method/erp.api.erp_sis.hall_of_honor";
+  import.meta.env.VITE_API_URL ||
+  "https://admin.sis.wellspring.edu.vn/api/method/erp.api.erp_sis.hall_of_honor";
 export const UPLOAD_URL =
   import.meta.env.VITE_UPLOAD_URL ||
   "https://admin.sis.wellspring.edu.vn/files";

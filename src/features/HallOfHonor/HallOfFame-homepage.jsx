@@ -8,7 +8,6 @@ import i18n from "../../core/i18n";
 import Splide from "@splidejs/splide";
 import { AutoScroll } from "@splidejs/splide-extension-auto-scroll";
 import "@splidejs/splide/dist/css/splide.min.css";
-import "animate.css";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import useResponsive from "../../shared/hook/useResponsive";
@@ -474,7 +473,7 @@ const HallofFame = () => {
         {/* Logo/nút khác bên phải */}
         <div className="flex flex-row gap-10 items-center">
           <img
-            src={`/HJ-white.png`}
+            src={`/halloffame/HJ-white.png`}
             className="h-12 hidden md:block"
             alt="Happy Journey"
           />
@@ -1138,7 +1137,7 @@ const HallofFame = () => {
             />
           </div>
           <button
-            onClick={() => navigate("/hall-of-honor/detail")}
+            onClick={() => navigate("/detail/scholarship-talent")}
             className="xl:w-[433px] w-[300px] mt-2 xl:px-16 px-10 py-2 bg-[#F9D16F] rounded-full font-semibold transition-colors"
           >
             <h3 className="shimmer-text-2 xl:text-[24px] text-[20px] font-bold">

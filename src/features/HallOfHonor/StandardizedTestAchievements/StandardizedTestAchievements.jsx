@@ -1,13 +1,17 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import axios from "axios";
-import { API_URL, BASE_URL, CDN_URL } from "../../../core/config";
+import { BASE_URL } from "../../../core/config";
 import { FaAngleDown, FaAngleRight } from "react-icons/fa6";
 import { FaSearch } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { AiOutlineDownCircle, AiOutlineLeftCircle } from "react-icons/ai";
+import hallOfHonorService from "../../../services/hallOfHonorService";
 
-const StudentHonorContent = ({ categoryId, categoryName, setSearchParams }) => {
+const StandardizedTestAchievements = ({
+  categoryId,
+  categoryName,
+  setSearchParams,
+}) => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
 
@@ -52,70 +56,49 @@ const StudentHonorContent = ({ categoryId, categoryName, setSearchParams }) => {
   // -----------------------------
   useEffect(() => {
     fetchCategories();
-    fetchRecords();
     fetchSchoolYears();
   }, []);
 
+  // Fetch records khi có categoryId (chỉ fetch records của category này)
+  useEffect(() => {
+    if (categoryId) {
+      fetchRecords();
+    }
+  }, [categoryId]);
+
+  // Lấy danh sách categories từ Frappe backend qua service
   const fetchCategories = async () => {
     try {
-      const res = await axios.get(`${API_URL}/award-categories`);
-
-      // Handle both response formats: direct array or {data: array}
-      let categoriesData;
-      if (Array.isArray(res.data)) {
-        categoriesData = res.data;
-      } else if (res.data.data && Array.isArray(res.data.data)) {
-        categoriesData = res.data.data;
-      } else {
-        categoriesData = [];
-      }
-
+      const categoriesData = await hallOfHonorService.getAwardCategories();
       setCategories(categoriesData);
     } catch (err) {
       console.error("❌ Error fetching categories:", err);
+      setCategories([]);
     }
   };
 
+  // Lấy danh sách records từ Frappe backend qua service - chỉ fetch của category này
   const fetchRecords = async () => {
     setIsLoadingRecords(true);
     try {
-      const res = await axios.get(`${API_URL}/award-records`);
-
-      // Handle both response formats: direct array or {data: array}
-      let recordsData;
-      if (Array.isArray(res.data)) {
-        recordsData = res.data;
-      } else if (res.data.data && Array.isArray(res.data.data)) {
-        recordsData = res.data.data;
-      } else {
-        recordsData = [];
-      }
-
+      const recordsData = await hallOfHonorService.getAwardRecords({ categoryId });
       setRecords(recordsData);
     } catch (err) {
       console.error("❌ Error fetching records:", err);
+      setRecords([]);
     } finally {
       setIsLoadingRecords(false);
     }
   };
 
+  // Lấy danh sách school years từ Frappe backend qua service
   const fetchSchoolYears = async () => {
     try {
-      const res = await axios.get(`${API_URL}/school-years`);
-
-      // Handle both response formats: direct array or {data: array}
-      let schoolYearsData;
-      if (Array.isArray(res.data)) {
-        schoolYearsData = res.data;
-      } else if (res.data.data && Array.isArray(res.data.data)) {
-        schoolYearsData = res.data.data;
-      } else {
-        schoolYearsData = [];
-      }
-
+      const schoolYearsData = await hallOfHonorService.getSchoolYears();
       setSchoolYears(schoolYearsData);
     } catch (err) {
       console.error("❌ Error fetching schoolYears:", err);
+      setSchoolYears([]);
     }
   };
 
@@ -504,19 +487,25 @@ const StudentHonorContent = ({ categoryId, categoryName, setSearchParams }) => {
         </div>
         {currentCategory.coverImage && (
           <div className="relative mb-4 mt-8 w-full max-h-[470px] mx-auto">
-            {/* Lớp dưới cùng: ảnh coverImage */}
+            {/* Lớp dưới cùng: ảnh coverImage từ Frappe */}
             <img
               src={`${BASE_URL}${currentCategory.coverImage}`}
               alt="Cover"
               className="w-full max-h-[470px] object-cover"
+              onError={(e) => {
+                e.target.style.display = "none";
+              }}
             />
             {/* Lớp giữa: khung frame-cover.png đè lên */}
             <img
               src={`/halloffame/frame-cover-2.png`}
               alt="Frame Cover"
               className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+              onError={(e) => {
+                e.target.style.display = "none";
+              }}
             />
-            {/* Lớp trên cùng: text ở góc trên bên phải căn giữa theo chiều dọc */}
+            {/* Lớp trên cùng: text ở góc trên bên trái căn giữa theo chiều dọc */}
             <div className="absolute top-0 left-0 h-full flex items-center justify-center pl-4">
               <div className="text-[#f9d16f] text-left lg:ml-8 lg:mt-12 leading-tight ">
                 {lines.map((line, idx) => {
@@ -567,4 +556,4 @@ const StudentHonorContent = ({ categoryId, categoryName, setSearchParams }) => {
   );
 };
 
-export default StudentHonorContent;
+export default StandardizedTestAchievements;

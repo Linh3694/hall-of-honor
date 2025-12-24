@@ -15,18 +15,36 @@ const Sidebar = ({
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  // Danh sách ID các danh mục đã có giao diện (được xử lý trong switch).
+  // Danh sách ID các danh mục đã có giao diện (ID mới từ Frappe backend)
   const enabledCategoryIds = [
-    "67c1799de8a7b376ad998650",
-    "67c17afce8a7b376ad9986be",
-    "67c17aaee8a7b376ad9986bb",
-    "67c17b7ae8a7b376ad9986c1",
-    "6833dbe3edff5e164ffc1589",
+    "SIS-AWARD-CAT-4373820", // Học sinh Danh dự
+    "SIS-AWARD-CAT-4409108", // WISers Nỗ lực
+    "SIS-AWARD-CAT-4409107", // Lớp Danh dự
+    "SIS-AWARD-CAT-4409109", // Học bổng Tài năng
+    "SIS-AWARD-CAT-4409110", // Thành tích chuẩn hóa quốc tế
   ];
+
+  // Hàm chuyển đổi category ID sang URL name
+  const getCategoryNameFromId = (id) => {
+    switch (id) {
+      case "SIS-AWARD-CAT-4409109":
+        return "scholarship-talent";
+      case "SIS-AWARD-CAT-4373820":
+        return "honor-student";
+      case "SIS-AWARD-CAT-4409107":
+        return "honor-class";
+      case "SIS-AWARD-CAT-4409108":
+        return "wisers-effort";
+      case "SIS-AWARD-CAT-4409110":
+        return "standardized-test";
+      default:
+        return null;
+    }
+  };
 
   const fixedCategories = [
     {
-      id: "67c17b7ae8a7b376ad9986c1",
+      id: "SIS-AWARD-CAT-4409109", // Học bổng Tài năng
       nameKey: "scholarship_talent",
       default: "Học bổng Tài năng",
     },
@@ -51,24 +69,24 @@ const Sidebar = ({
       default: "WISers Danh dự",
       subCategories: [
         {
-          id: "67c1799de8a7b376ad998650",
+          id: "SIS-AWARD-CAT-4373820", // Học sinh Danh dự
           nameKey: "student_honor",
           default: "Học sinh Danh dự",
         },
         {
-          id: "67c17aaee8a7b376ad9986bb",
+          id: "SIS-AWARD-CAT-4409107", // Lớp Danh dự
           nameKey: "class_honor",
           default: "Lớp Danh dự",
         },
       ],
     },
     {
-      id: "67c17afce8a7b376ad9986be",
+      id: "SIS-AWARD-CAT-4409108", // WISers Nỗ lực
       nameKey: "wiser_effort",
       default: "WISers Nỗ lực",
     },
     {
-      id: "6833dbe3edff5e164ffc1589",
+      id: "SIS-AWARD-CAT-4409110", // Thành tích chuẩn hóa quốc tế
       nameKey: "standardized_test",
       default: "Thành tích các bài thi chuẩn hóa",
     },
@@ -141,7 +159,12 @@ const Sidebar = ({
                   if (!hasSubcategories) {
                     if (isCatEnabled) {
                       setSelectedCategoryId(fixedCat.id);
-                      // Delay việc đóng sidebar để đảm bảo state được cập nhật trước
+                      // Navigate trực tiếp để đảm bảo chuyển trang ngay cả khi đang ở trang Detail
+                      const categoryName = getCategoryNameFromId(fixedCat.id);
+                      if (categoryName) {
+                        navigate(`/detail/${categoryName}`);
+                      }
+                      // Delay việc đóng sidebar
                       setTimeout(() => {
                         if (window.innerWidth < 1600) {
                           closeSidebar && closeSidebar();
@@ -188,7 +211,12 @@ const Sidebar = ({
                         onClick={() => {
                           if (isSubEnabled) {
                             setSelectedCategoryId(sub.id);
-                            // Delay việc đóng sidebar để đảm bảo state được cập nhật trước
+                            // Navigate trực tiếp để đảm bảo chuyển trang ngay cả khi đang ở trang Detail
+                            const categoryName = getCategoryNameFromId(sub.id);
+                            if (categoryName) {
+                              navigate(`/detail/${categoryName}`);
+                            }
+                            // Delay việc đóng sidebar
                             setTimeout(() => {
                               if (window.innerWidth < 1600) {
                                 closeSidebar && closeSidebar();

@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo } from "react";
-import axios from "axios";
-import { API_URL, BASE_URL } from "../../core/config";
+import { BASE_URL } from "../../core/config";
 import { FaAngleDown, FaAngleRight } from "react-icons/fa6";
 import { FaSearch } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import hallOfHonorService from "../../services/hallOfHonorService";
 
 const StudentHonorContent = ({
   categoryId,
@@ -83,63 +83,37 @@ const StudentHonorContent = ({
     navigate,
   ]);
 
+  // Lấy danh sách categories từ Frappe backend qua service
   const fetchCategories = async () => {
     try {
-      const res = await axios.get(`${API_URL}/award-categories`);
-
-      // Handle both response formats: direct array or {data: array}
-      let categoriesData;
-      if (Array.isArray(res.data)) {
-        categoriesData = res.data;
-      } else if (res.data.data && Array.isArray(res.data.data)) {
-        categoriesData = res.data.data;
-      } else {
-        categoriesData = [];
-      }
-
+      const categoriesData = await hallOfHonorService.getAwardCategories();
       setCategories(categoriesData);
     } catch (err) {
       console.error("❌ Error fetching categories:", err);
+      setCategories([]);
     }
   };
 
+  // Lấy danh sách records từ Frappe backend qua service
   const fetchRecords = async () => {
     setIsLoadingRecords(true);
     try {
-      const res = await axios.get(`${API_URL}/award-records`);
-
-      // Handle both response formats: direct array or {data: array}
-      let recordsData;
-      if (Array.isArray(res.data)) {
-        recordsData = res.data;
-      } else if (res.data.data && Array.isArray(res.data.data)) {
-        recordsData = res.data.data;
-      } else {
-        recordsData = [];
-      }
-
+      // Có thể truyền filters nếu cần, ví dụ:
+      // const filters = { categoryId: categoryId };
+      const recordsData = await hallOfHonorService.getAwardRecords();
       setRecords(recordsData);
     } catch (err) {
       console.error("❌ Error fetching records:", err);
+      setRecords([]);
     } finally {
       setIsLoadingRecords(false);
     }
   };
 
+  // Lấy danh sách school years từ Frappe backend qua service
   const fetchSchoolYears = async () => {
     try {
-      const res = await axios.get(`${API_URL}/school-years`);
-
-      // Handle both response formats: direct array or {data: array}
-      let schoolYearsData;
-      if (Array.isArray(res.data)) {
-        schoolYearsData = res.data;
-      } else if (res.data.data && Array.isArray(res.data.data)) {
-        schoolYearsData = res.data.data;
-      } else {
-        schoolYearsData = [];
-      }
-
+      const schoolYearsData = await hallOfHonorService.getSchoolYears();
       setSchoolYears(schoolYearsData);
     } catch (err) {
       console.error("❌ Error fetching schoolYears:", err);
@@ -149,6 +123,7 @@ const StudentHonorContent = ({
 
   // -----------------------------
   // 2) Thiết lập mặc định view cho danh mục được chọn
+  // SubCategory được match vào 3 phần: Năm học - Học kỳ - Tháng
   // -----------------------------
   useEffect(() => {
     if (categoryId && records.length && schoolYears.length) {
@@ -157,9 +132,11 @@ const StudentHonorContent = ({
   }, [categoryId, records, schoolYears]);
 
   const setDefaultViewForCategory = (catId) => {
+    // Lọc records theo category ID
     const catRecords = records.filter((r) => r.awardCategory?._id === catId);
     if (!catRecords.length) return;
 
+    // Phân loại records theo subAward type (year, semester, month)
     const yearRecs = catRecords.filter((r) => r.subAward?.type === "year");
     const semesterRecs = catRecords.filter(
       (r) => r.subAward?.type === "semester"
@@ -183,19 +160,35 @@ const StudentHonorContent = ({
 
     setActiveTab(targetTab);
 
-    // Find the best school year to select
+    // Find the best school year to select - Ưu tiên năm học hiện tại
     const currentSyId = getCurrentSchoolYearId();
-    const recordsInCurrentSy = targetRecords.filter(
-      (r) => String(r.subAward?.schoolYear) === currentSyId
-    );
 
     let selectedSyId;
-    if (currentSyId && recordsInCurrentSy.length > 0) {
-      selectedSyId = currentSyId;
-    } else {
-      // Get the newest school year from available records
+    if (currentSyId) {
+      // Kiểm tra xem năm học hiện tại có trong schoolYears không
+      const currentSyExists = schoolYears.some((sy) => sy._id === currentSyId);
+      if (currentSyExists) {
+        selectedSyId = currentSyId;
+      }
+    }
+
+    // Nếu không có năm học hiện tại hoặc không có records cho năm hiện tại
+    if (!selectedSyId) {
+      // Lấy năm học mới nhất từ available records
       const bySchoolYear = groupRecordsBySchoolYear(targetRecords);
-      selectedSyId = findNewestSchoolYearId(Object.keys(bySchoolYear));
+      const availableYearIds = Object.keys(bySchoolYear);
+
+      if (availableYearIds.length > 0) {
+        selectedSyId = findNewestSchoolYearId(availableYearIds);
+      } else {
+        // Nếu không có records nào, chọn năm học mới nhất từ tất cả năm học
+        const newestYear = [...schoolYears].sort((a, b) => {
+          const dateA = new Date(a.startDate);
+          const dateB = new Date(b.startDate);
+          return dateB - dateA;
+        })[0];
+        selectedSyId = newestYear?._id || "";
+      }
     }
 
     setSelectedSchoolYearId(selectedSyId || "");
@@ -260,6 +253,7 @@ const StudentHonorContent = ({
     return bestId;
   };
 
+  // Hàm lấy năm học hiện tại (đang diễn ra)
   const getCurrentSchoolYearId = () => {
     const today = new Date();
     const currentSy = schoolYears.find((sy) => {
@@ -270,8 +264,21 @@ const StudentHonorContent = ({
     return currentSy ? currentSy._id : "";
   };
 
+  // Hàm lấy năm học mới nhất (nếu không tìm thấy năm học hiện tại)
+  const getNewestSchoolYearId = (years) => {
+    if (years.length === 0) return "";
+    // Sắp xếp theo start_date giảm dần và lấy năm đầu tiên
+    const sorted = [...years].sort((a, b) => {
+      const dateA = new Date(a.startDate);
+      const dateB = new Date(b.startDate);
+      return dateB - dateA; // Giảm dần
+    });
+    return sorted[0]._id;
+  };
+
   // -----------------------------
   // 3) Tính toán các danh sách dùng cho filter
+  // Lọc records theo category và type (year/semester/month)
   // -----------------------------
   const recordsSameCatAndType = records.filter(
     (r) => r.awardCategory?._id === categoryId && r.subAward?.type === activeTab
@@ -293,18 +300,30 @@ const StudentHonorContent = ({
   const displaySchoolYears =
     relevantSchoolYears.length > 0 ? relevantSchoolYears : schoolYears;
 
-  // Auto-select first school year if none selected and data is available
+  // Auto-select năm học hiện tại (hoặc năm học mới nhất nếu không có năm hiện tại)
   useEffect(() => {
     if (!selectedSchoolYearId && displaySchoolYears.length > 0) {
-      setSelectedSchoolYearId(displaySchoolYears[0]._id);
+      // Ưu tiên: Chọn năm học hiện tại (đang diễn ra)
+      const currentYearId = getCurrentSchoolYearId();
+
+      if (
+        currentYearId &&
+        displaySchoolYears.some((sy) => sy._id === currentYearId)
+      ) {
+        setSelectedSchoolYearId(currentYearId);
+      } else {
+        // Nếu không có năm hiện tại, chọn năm học mới nhất
+        const newestYearId = getNewestSchoolYearId(displaySchoolYears);
+        setSelectedSchoolYearId(newestYearId);
+      }
     }
-  }, [selectedSchoolYearId, displaySchoolYears]);
+  }, [selectedSchoolYearId, displaySchoolYears, schoolYears]);
 
   const recordsCatTypeYear = recordsSameCatAndType.filter(
     (r) => String(r.subAward?.schoolYear) === selectedSchoolYearId
   );
 
-  // Only month records for this category and school year
+  // Lọc month records cho category và năm học hiện tại
   const monthRecords = useMemo(() => {
     return records.filter(
       (r) =>
@@ -314,20 +333,38 @@ const StudentHonorContent = ({
     );
   }, [records, categoryId, selectedSchoolYearId]);
 
-  const distinctSemesters = [
-    ...new Set(
-      recordsCatTypeYear.map((r) => r.subAward?.semester).filter(Boolean)
-    ),
-  ].sort((a, b) => a - b);
+  // Lấy danh sách các học kỳ từ subAwards của category theo năm học đã chọn
+  const semesterSubAwards = useMemo(() => {
+    return (currentCategory.subAwards || []).filter(
+      (sub) =>
+        sub.type === "semester" &&
+        String(sub.schoolYear) === selectedSchoolYearId
+    );
+  }, [currentCategory.subAwards, selectedSchoolYearId]);
 
+  // Tạo danh sách semester labels (dùng label thay vì number)
+  const distinctSemesters = useMemo(() => {
+    if (semesterSubAwards.length > 0) {
+      // Trả về array các label của semester
+      return semesterSubAwards
+        .sort((a, b) => (a.priority || 0) - (b.priority || 0))
+        .map((sub) => sub.label);
+    }
+    // Fallback: lấy từ records
+    return [
+      ...new Set(
+        recordsCatTypeYear.map((r) => r.subAward?.label).filter(Boolean)
+      ),
+    ].sort();
+  }, [semesterSubAwards, recordsCatTypeYear]);
+
+  // Lọc subAwards của category theo type "month" và năm học đã chọn
   const monthSubAwards = useMemo(() => {
     return (currentCategory.subAwards || []).filter(
       (sub) =>
-        sub.type === "month" &&
-        String(sub.schoolYear) === selectedSchoolYearId &&
-        monthRecords.some((r) => r.subAward?.label === sub.label)
+        sub.type === "month" && String(sub.schoolYear) === selectedSchoolYearId
     );
-  }, [currentCategory.subAwards, selectedSchoolYearId, monthRecords]);
+  }, [currentCategory.subAwards, selectedSchoolYearId]);
 
   const distinctMonths = useMemo(() => {
     return [
@@ -336,6 +373,18 @@ const StudentHonorContent = ({
       ),
     ].sort((a, b) => a - b);
   }, [recordsCatTypeYear]);
+
+  // Tự động chọn semester đầu tiên khi chuyển tab "semester" hoặc đổi năm học
+  useEffect(() => {
+    if (
+      activeTab === "semester" &&
+      selectedSchoolYearId &&
+      distinctSemesters.length > 0 &&
+      (!selectedSemester || !distinctSemesters.includes(selectedSemester))
+    ) {
+      setSelectedSemester(distinctSemesters[0]);
+    }
+  }, [activeTab, selectedSchoolYearId, selectedSemester, distinctSemesters]);
 
   // Khi chuyển sang tab "month", nếu chưa chọn month thì tự động chọn option đầu tiên (nếu có)
   useEffect(() => {
@@ -360,7 +409,8 @@ const StudentHonorContent = ({
     if (String(r.subAward?.schoolYear) !== selectedSchoolYearId) return false;
     if (activeTab === "semester") {
       if (!selectedSemester) return false;
-      if (String(r.subAward?.semester) !== selectedSemester) return false;
+      // Filter theo label thay vì semester number
+      if (r.subAward?.label !== selectedSemester) return false;
     }
     if (activeTab === "month") {
       if (!selectedMonth) return false;
@@ -484,44 +534,56 @@ const StudentHonorContent = ({
     navigate(`/detail/${categoryName}`);
   };
 
-  // Hàm phụ: trả về text cho danh hiệu (VD: "Học sinh Danh dự - Tháng 8"), bilingual logic
+  // Hàm chuẩn hóa category name (bỏ \n, chuẩn hóa case)
+  const normalizeCategoryName = (name) => {
+    if (!name) return "";
+    // Bỏ \n và khoảng trắng thừa, chuẩn hóa chữ hoa/thường
+    return name
+      .replace(/\\n/g, " ") // Thay \n thành space
+      .replace(/\n/g, " ") // Thay newline thành space
+      .replace(/\s+/g, " ") // Thay nhiều space thành 1 space
+      .split(" ")
+      .map((word, index) => {
+        // Chữ đầu viết hoa, các chữ sau viết thường
+        if (word.length === 0) return "";
+        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+      })
+      .join(" ")
+      .trim();
+  };
+
+  // Hàm phụ: trả về text cho danh hiệu với song ngữ
   const getSubAwardLabel = (record) => {
     if (!record?.subAward) return "";
-    const { type, month, semester, schoolYear, label } = record.subAward;
-    const categoryName = t(`category_${categoryId}`, t("award", "Danh hiệu"));
+    const { type, schoolYear, label, labelEng } = record.subAward;
+
+    // Lấy tên category theo ngôn ngữ và chuẩn hóa
+    const rawCategoryName =
+      i18n.language === "vi"
+        ? currentCategory.name || t("award", "Danh hiệu")
+        : currentCategory.nameEng || t("award", "Award");
+
+    const categoryName = normalizeCategoryName(rawCategoryName);
+
     const schoolYearLabel = findSchoolYearLabel(schoolYear);
 
-    if (type === "month") {
-      // Tách các số tháng từ label
-      const nums = String(label).match(/\d+/g) || [];
-      if (i18n.language === "vi") {
-        // VD: Tháng 1 & Tháng 2
-        const thangs = nums.map((n) => `Tháng ${n}`);
-        return `${categoryName} - ${thangs.join(" & ")} - ${t("schoolYearSC", "Năm học")} ${schoolYearLabel}`;
-      } else {
-        // VD: January & February
-        const monthNames = [
-          "January",
-          "February",
-          "March",
-          "April",
-          "May",
-          "June",
-          "July",
-          "August",
-          "September",
-          "October",
-          "November",
-          "December",
-        ];
-        const months = nums.map((n) => monthNames[Number(n) - 1]);
-        return `${categoryName} - ${months.join(" & ")} - ${t("schoolYearSC", "School Year")} ${schoolYearLabel}`;
-      }
+    // Lấy label của sub_category theo ngôn ngữ
+    const subCategoryLabel = i18n.language === "vi" ? label : labelEng || label;
+
+    if (type === "year") {
+      // Năm học: "Học sinh Danh dự - Năm học 2025-2026"
+      return `${categoryName} - ${subCategoryLabel}`;
     } else if (type === "semester") {
-      return `${categoryName} - ${t("semester", "Học kì")} ${semester || "?"} - ${t("schoolYearSC", "Năm học")} ${schoolYearLabel}`;
-    } else if (type === "year") {
-      return `${categoryName} - ${t("schoolYear", "Năm học")} ${schoolYearLabel}`;
+      // Học kì: "Học sinh Danh dự - Học kì 1 - Năm học 2025-2026"
+      return `${categoryName} - ${subCategoryLabel} - ${t("schoolYearSC", "Năm học")} ${schoolYearLabel}`;
+    } else if (type === "month") {
+      // Tháng: "Học sinh Danh dự - Tháng 10 - Năm học 2025-2026"
+      return `${categoryName} - ${subCategoryLabel} - ${t("schoolYearSC", "Năm học")} ${schoolYearLabel}`;
+    } else if (type === "custom") {
+      // Custom: "Học sinh Danh dự - [Custom Label] - Năm học 2025-2026"
+      return `${categoryName} - ${subCategoryLabel} - ${t("schoolYearSC", "Năm học")} ${schoolYearLabel}`;
     }
+
     return categoryName;
   };
 
@@ -583,9 +645,9 @@ const StudentHonorContent = ({
 
   return (
     <div className="lg:p-6 px-3 mb-10 lg:min-w-[960px] w-full mx-auto mt-[40px] overflow-y-auto">
-      {/* Tiêu đề, mô tả và ảnh cover */}
-
+      {/* ===== PHẦN 1: TIÊU ĐỀ, MÔ TẢ VÀ ẢNH COVER CỦA CATEGORY ===== */}
       <div>
+        {/* Tiêu đề Category - Hiển thị theo ngôn ngữ (vi/en) */}
         <div className="flex flex-col shimmer-text-title text-center items-center justify-center uppercase leading-tight">
           {lines.map((line, idx) => {
             const textSize =
@@ -605,6 +667,8 @@ const StudentHonorContent = ({
           })}
           <img src={`/halloffame/vector.png`} alt="Cover" />
         </div>
+
+        {/* Mô tả Category - Hiển thị theo ngôn ngữ (description_vn / description_en) */}
         <div className="lg:w-[900px] w-full mx-auto text-left mt-4 mb-4">
           <div className="mb-4 text-[#002855] text-justify font-semibold lg:text-[18px] text-[15px]">
             {i18n.language === "vi"
@@ -612,9 +676,11 @@ const StudentHonorContent = ({
               : currentCategory.descriptionEng || ""}
           </div>
         </div>
+
+        {/* Ảnh Cover của Category - Từ Frappe backend */}
         {currentCategory.coverImage && (
           <div className="relative mb-4 mt-8 w-full max-h-[470px] mx-auto">
-            {/* Lớp dưới cùng: ảnh coverImage */}
+            {/* Lớp dưới cùng: ảnh coverImage từ Frappe */}
             <img
               src={`${BASE_URL}${currentCategory.coverImage}`}
               alt="Cover"
@@ -657,7 +723,7 @@ const StudentHonorContent = ({
         )}
       </div>
 
-      {/* Tabs: Năm học / Học kì / Tháng */}
+      {/* ===== PHẦN 2: TABS LỌC THEO SUBCATEGORY (NĂM HỌC / HỌC KÌ / THÁNG) ===== */}
       <div className="flex space-x-12 text-lg items-center justify-center font-medium mb-10 mt-10">
         {["year", "semester", "month"].map((tab) => (
           <button
@@ -678,8 +744,9 @@ const StudentHonorContent = ({
         ))}
       </div>
 
-      {/* Filter row */}
+      {/* ===== PHẦN 3: BỘ LỌC (NĂM HỌC, HỌC KÌ, THÁNG, TÌM KIẾM) ===== */}
       <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
+        {/* Dropdown chọn năm học - Hiển thị cho cả 3 tabs */}
         {(activeTab === "year" ||
           activeTab === "semester" ||
           activeTab === "month") && (
@@ -703,6 +770,7 @@ const StudentHonorContent = ({
           </select>
         )}
 
+        {/* Dropdown chọn học kì - Chỉ hiển thị khi tab "semester" được chọn */}
         {activeTab === "semester" && selectedSchoolYearId && (
           <select
             className="py-2 bg-[#f5f5f5] text-[#757575] border-none rounded-full focus:outline-none"
@@ -710,14 +778,30 @@ const StudentHonorContent = ({
             onChange={(e) => setSelectedSemester(e.target.value)}
           >
             <option value="">{t("selectSemester", "--Chọn học kì--")}</option>
-            {distinctSemesters.map((num) => (
-              <option key={num} value={num}>
-                {t("semester", "Học kì")} {num}
+            {distinctSemesters.length > 0 ? (
+              distinctSemesters.map((label) => {
+                // Tìm subAward tương ứng để lấy label theo ngôn ngữ
+                const subAward = semesterSubAwards.find(
+                  (sub) => sub.label === label
+                );
+                const displayLabel =
+                  i18n.language === "vi" ? label : subAward?.labelEng || label;
+
+                return (
+                  <option key={label} value={label}>
+                    {displayLabel}
+                  </option>
+                );
+              })
+            ) : (
+              <option disabled>
+                {t("noSemesterAvailable", "Chưa có học kì nào")}
               </option>
-            ))}
+            )}
           </select>
         )}
 
+        {/* Dropdown chọn tháng - Chỉ hiển thị khi tab "month" được chọn */}
         {activeTab === "month" && selectedSchoolYearId && (
           <select
             className="py-2 bg-[#f5f5f5] text-[#757575] border-none rounded-full focus:outline-none"
@@ -725,11 +809,17 @@ const StudentHonorContent = ({
             onChange={(e) => setSelectedMonth(e.target.value)}
           >
             <option value="">{t("selectMonth", "--Chọn tháng--")}</option>
-            {monthSubAwards.map((sub) => (
-              <option key={sub.label} value={sub.label}>
-                {getSubAwardLabelForFilter(sub)}
-              </option>
-            ))}
+            {monthSubAwards.map((sub) => {
+              // Hiển thị label theo ngôn ngữ
+              const displayLabel =
+                i18n.language === "vi" ? sub.label : sub.labelEng || sub.label;
+
+              return (
+                <option key={sub.label} value={sub.label}>
+                  {displayLabel}
+                </option>
+              );
+            })}
           </select>
         )}
 

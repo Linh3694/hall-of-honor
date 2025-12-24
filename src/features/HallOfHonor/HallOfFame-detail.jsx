@@ -44,37 +44,37 @@ function HallOfFamePublicPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const categoryTitleRef = useRef(null);
 
-  // Hàm chuyển đổi category name thành ID
+  // Hàm chuyển đổi category name thành ID (Frappe backend)
   const getCategoryIdFromName = (name) => {
     switch (name) {
       case "scholarship-talent":
-        return "67c17b7ae8a7b376ad9986c1";
+        return "SIS-AWARD-CAT-4409109"; // Học bổng Tài năng
       case "honor-student":
-        return "67c1799de8a7b376ad998650";
+        return "SIS-AWARD-CAT-4373820"; // Học sinh Danh dự
       case "honor-class":
-        return "67c17aaee8a7b376ad9986bb";
+        return "SIS-AWARD-CAT-4409107"; // Lớp Danh dự
       case "wisers-effort":
-        return "67c17afce8a7b376ad9986be";
+        return "SIS-AWARD-CAT-4409108"; // WISers Nỗ lực
       case "standardized-test":
-        return "6833dbe3edff5e164ffc1589";
+        return "SIS-AWARD-CAT-4409110"; // Thành tích chuẩn hóa quốc tế
       default:
         return null;
     }
   };
 
-  // Hàm chuyển đổi category ID thành name
+  // Hàm chuyển đổi category ID thành name (Frappe backend)
   const getCategoryNameFromId = (id) => {
     switch (id) {
-      case "67c17b7ae8a7b376ad9986c1":
-        return "scholarship-talent";
-      case "67c1799de8a7b376ad998650":
-        return "honor-student";
-      case "67c17aaee8a7b376ad9986bb":
-        return "honor-class";
-      case "67c17afce8a7b376ad9986be":
-        return "wisers-effort";
-      case "6833dbe3edff5e164ffc1589":
-        return "standardized-test";
+      case "SIS-AWARD-CAT-4409109":
+        return "scholarship-talent"; // Học bổng Tài năng
+      case "SIS-AWARD-CAT-4373820":
+        return "honor-student"; // Học sinh Danh dự
+      case "SIS-AWARD-CAT-4409107":
+        return "honor-class"; // Lớp Danh dự
+      case "SIS-AWARD-CAT-4409108":
+        return "wisers-effort"; // WISers Nỗ lực
+      case "SIS-AWARD-CAT-4409110":
+        return "standardized-test"; // Thành tích chuẩn hóa quốc tế
       default:
         return null;
     }
@@ -96,11 +96,17 @@ function HallOfFamePublicPage() {
     const categoryName = getCategoryNameFromId(selectedCategoryId);
     if (!categoryName) return;
 
-    // Nếu đang ở trang detail subAward thì không redirect
-    if (tenSubAward) return;
-
     // Nếu URL đã ở trang chi tiết (có recordId kèm theo studentId hoặc classId) thì giữ nguyên
     if (recordId && (studentId || classId)) {
+      return;
+    }
+
+    // Lấy categoryId hiện tại từ URL
+    const currentCategoryId = getCategoryIdFromName(category);
+
+    // Nếu đang ở trang detail subAward VÀ category không thay đổi thì không redirect
+    // Nhưng nếu category thay đổi (user click sidebar) thì vẫn phải navigate
+    if (tenSubAward && currentCategoryId === selectedCategoryId) {
       return;
     }
 
@@ -109,7 +115,15 @@ function HallOfFamePublicPage() {
     }, 0);
 
     return () => clearTimeout(timeoutId);
-  }, [selectedCategoryId, navigate, recordId, studentId, classId, tenSubAward]);
+  }, [
+    selectedCategoryId,
+    navigate,
+    recordId,
+    studentId,
+    classId,
+    tenSubAward,
+    category,
+  ]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -190,10 +204,10 @@ function HallOfFamePublicPage() {
     if (tenSubAward) {
       return <Detail />;
     }
-    // Logic cũ
+    // Switch case với ID mới từ Frappe
     switch (selectedCategoryId) {
       // Học sinh danh dự
-      case "67c1799de8a7b376ad998650":
+      case "SIS-AWARD-CAT-4373820":
         return (
           <StudentHonorContent
             categoryId={selectedCategoryId}
@@ -204,7 +218,7 @@ function HallOfFamePublicPage() {
           />
         );
       // Học bổng tài năng
-      case "67c17b7ae8a7b376ad9986c1":
+      case "SIS-AWARD-CAT-4409109":
         return (
           <ScholarShipContent
             categoryId={selectedCategoryId}
@@ -214,8 +228,8 @@ function HallOfFamePublicPage() {
             setSearchParams={setSearchParams}
           />
         );
-      // Học sinh nỗ lực
-      case "67c17afce8a7b376ad9986be":
+      // WISers Nỗ lực
+      case "SIS-AWARD-CAT-4409108":
         return (
           <StudentHonorContent
             categoryId={selectedCategoryId}
@@ -226,7 +240,7 @@ function HallOfFamePublicPage() {
           />
         );
       // Lớp danh dự
-      case "67c17aaee8a7b376ad9986bb":
+      case "SIS-AWARD-CAT-4409107":
         return (
           <ClassHonorContent
             categoryId={selectedCategoryId}
@@ -236,8 +250,8 @@ function HallOfFamePublicPage() {
             setSearchParams={setSearchParams}
           />
         );
-      // Thành tích các bài thi chuẩn hóa
-      case "6833dbe3edff5e164ffc1589":
+      // Thành tích các bài thi chuẩn hóa quốc tế
+      case "SIS-AWARD-CAT-4409110":
         return (
           <StandardizedTestAchievements
             categoryId={selectedCategoryId}

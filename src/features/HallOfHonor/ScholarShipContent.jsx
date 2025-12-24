@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
-import { API_URL, BASE_URL, CDN_URL } from "../../core/config";
+import { BASE_URL } from "../../core/config";
 import {
   FaSearch,
   FaChevronLeft,
@@ -12,6 +11,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { BiSolidQuoteLeft } from "react-icons/bi";
 import { FaAngleDown, FaAngleRight } from "react-icons/fa6";
+import hallOfHonorService from "../../services/hallOfHonorService";
 
 const ScholarShipContent = ({
   categoryId,
@@ -76,61 +76,46 @@ const ScholarShipContent = ({
   // 1) Lấy dữ liệu từ server
   // -----------------------------
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [categoriesRes, recordsRes, schoolYearsRes] = await Promise.all([
-          axios.get(`${API_URL}/award-categories`),
-          axios.get(`${API_URL}/award-records`),
-          axios.get(`${API_URL}/school-years`),
-        ]);
+    fetchCategories();
+    fetchRecords();
+    fetchSchoolYears();
+  }, []);
 
-        // Handle both response formats: direct array or {data: array}
-        let categoriesData;
-        if (Array.isArray(categoriesRes.data)) {
-          categoriesData = categoriesRes.data;
-        } else if (
-          categoriesRes.data.data &&
-          Array.isArray(categoriesRes.data.data)
-        ) {
-          categoriesData = categoriesRes.data.data;
-        } else {
-          categoriesData = [];
-        }
+  // Lấy danh sách categories từ Frappe backend qua service
+  const fetchCategories = async () => {
+    try {
+      const categoriesData = await hallOfHonorService.getAwardCategories();
+      console.log("📦 Categories fetched:", categoriesData);
+      setCategories(categoriesData);
+    } catch (err) {
+      console.error("❌ Error fetching categories:", err);
+      setCategories([]);
+    }
+  };
 
-        let recordsData;
-        if (Array.isArray(recordsRes.data)) {
-          recordsData = recordsRes.data;
-        } else if (
-          recordsRes.data.data &&
-          Array.isArray(recordsRes.data.data)
-        ) {
-          recordsData = recordsRes.data.data;
-        } else {
-          recordsData = [];
-        }
+  // Lấy danh sách records từ Frappe backend qua service
+  const fetchRecords = async () => {
+    try {
+      const recordsData = await hallOfHonorService.getAwardRecords();
+      console.log("📦 Records fetched:", recordsData);
+      setRecords(recordsData);
+    } catch (err) {
+      console.error("❌ Error fetching records:", err);
+      setRecords([]);
+    }
+  };
 
-        let schoolYearsData;
-        if (Array.isArray(schoolYearsRes.data)) {
-          schoolYearsData = schoolYearsRes.data;
-        } else if (
-          schoolYearsRes.data.data &&
-          Array.isArray(schoolYearsRes.data.data)
-        ) {
-          schoolYearsData = schoolYearsRes.data.data;
-        } else {
-          schoolYearsData = [];
-        }
-
-        setCategories(categoriesData);
-        setRecords(recordsData);
-        setSchoolYears(schoolYearsData);
-      } catch (err) {
-        console.error("❌ Error fetching data:", err);
-      }
-    };
-
-    fetchData();
-  }, [API_URL]);
+  // Lấy danh sách school years từ Frappe backend qua service
+  const fetchSchoolYears = async () => {
+    try {
+      const schoolYearsData = await hallOfHonorService.getSchoolYears();
+      console.log("📦 School years fetched:", schoolYearsData);
+      setSchoolYears(schoolYearsData);
+    } catch (err) {
+      console.error("❌ Error fetching schoolYears:", err);
+      setSchoolYears([]);
+    }
+  };
 
   // -----------------------------
   // 2) Thiết lập mặc định view cho danh mục theo subAward custom
@@ -227,58 +212,53 @@ const ScholarShipContent = ({
         return acc;
       }, []);
 
-  // Nhóm records theo subAward và thêm thông tin priority
-  const groupedRecords = filteredSearchRecords.reduce((acc, record) => {
+  // Lấy tất cả subCategories theo năm học đã chọn (dù có records hay không)
+  const availableSubCategories = (currentCategory.subAwards || [])
+    .filter(
+      (sub) =>
+        sub.type === "custom" && String(sub.schoolYear) === selectedSchoolYearId
+    )
+    .sort((a, b) => (a.priority || 0) - (b.priority || 0)); // Sort theo priority
+
+  // Nhóm records theo subAward label
+  const recordsBySubCategory = filteredSearchRecords.reduce((acc, record) => {
     const label = record.subAward?.label || "Unknown";
-    // Determine priority: first from CATEGORY (đã được admin cập nhật),
-    // sau đó tới priority còn lưu trong RECORD, cuối cùng tới thứ tự xuất hiện
-    const catSub = currentCategory.subAwards?.find(
-      (sub) => sub.type === "custom" && sub.label === label
-    );
-    let prio = catSub?.priority; // ① lấy trực tiếp từ category
-    if (!prio) {
-      // ② fallback sang record cũ nếu chưa có
-      prio = record.subAward?.priority;
-    }
-    if (!prio) {
-      // ③ cuối cùng fallback theo thứ tự
-      const idx = currentCategory.subAwards?.findIndex(
-        (sub) => sub.type === "custom" && sub.label === label
-      );
-      prio = idx >= 0 ? idx + 1 : 0;
-    }
-    if (!prio) {
-      const idx = currentCategory.subAwards?.findIndex(
-        (sub) => sub.type === "custom" && sub.label === label
-      );
-      prio = idx >= 0 ? idx + 1 : 0;
-    }
     if (!acc[label]) {
-      acc[label] = {
-        records: [],
-        priority: prio,
-      };
+      acc[label] = [];
     }
-    acc[label].records.push(record);
+    acc[label].push(record);
     return acc;
   }, {});
 
-  // Chuyển đổi thành mảng và sắp xếp
-  const sortedGroups = Object.entries(groupedRecords)
-    .map(([label, data]) => ({
-      subAwardLabel: label,
-      recordsGroup: data.records,
-      priority: data.priority,
-      hasData: data.records.some((record) => record.students.length > 0),
-    }))
-    .sort((a, b) => {
-      // Nếu cả hai đều có dữ liệu hoặc đều không có dữ liệu, sắp xếp theo priority
-      if (a.hasData === b.hasData) {
-        return a.priority - b.priority;
-      }
-      // Ưu tiên nhóm có dữ liệu lên trước
-      return b.hasData ? 1 : -1;
-    });
+  // Tạo sortedGroups từ availableSubCategories
+  const sortedGroups = availableSubCategories.map((subCat) => {
+    const records = recordsBySubCategory[subCat.label] || [];
+    return {
+      subAwardLabel: subCat.label,
+      subAwardLabelEng: subCat.labelEng,
+      recordsGroup: records,
+      priority: subCat.priority || 0,
+      hasData: records.some((record) => record.students.length > 0),
+    };
+  });
+
+  // Debug logs
+  useEffect(() => {
+    if (currentCategory._id) {
+      console.log("🔍 Debug ScholarShipContent:");
+      console.log("  - Current Category:", currentCategory);
+      console.log("  - SubAwards:", currentCategory.subAwards);
+      console.log("  - Selected School Year:", selectedSchoolYearId);
+      console.log("  - Display School Years:", displaySchoolYears);
+      console.log("  - Filtered Base Records:", filteredBaseRecords);
+      console.log("  - Sorted Groups:", sortedGroups);
+    }
+  }, [
+    currentCategory._id,
+    selectedSchoolYearId,
+    filteredBaseRecords.length,
+    sortedGroups.length,
+  ]);
 
   // Thêm useEffect để xử lý search
   useEffect(() => {
@@ -367,12 +347,47 @@ const ScholarShipContent = ({
     return syDoc?.code || syDoc?.name || "";
   };
 
-  // Auto-select first school year if none selected and data is available
+  // Hàm lấy năm học hiện tại (đang diễn ra)
+  const getCurrentSchoolYearId = () => {
+    const today = new Date();
+    const currentSy = schoolYears.find((sy) => {
+      const start = new Date(sy.startDate);
+      const end = new Date(sy.endDate);
+      return today >= start && today <= end;
+    });
+    return currentSy ? currentSy._id : "";
+  };
+
+  // Hàm lấy năm học mới nhất (nếu không tìm thấy năm học hiện tại)
+  const getNewestSchoolYearId = (years) => {
+    if (years.length === 0) return "";
+    // Sắp xếp theo start_date giảm dần và lấy năm đầu tiên
+    const sorted = [...years].sort((a, b) => {
+      const dateA = new Date(a.startDate);
+      const dateB = new Date(b.startDate);
+      return dateB - dateA; // Giảm dần
+    });
+    return sorted[0]._id;
+  };
+
+  // Auto-select năm học hiện tại hoặc mới nhất nếu chưa có
   useEffect(() => {
-    if (displaySchoolYears.length > 0 && !selectedSchoolYearId) {
-      setSelectedSchoolYearId(String(displaySchoolYears[0]._id));
+    if (!selectedSchoolYearId && displaySchoolYears.length > 0) {
+      // Ưu tiên: Chọn năm học hiện tại (đang diễn ra)
+      const currentYearId = getCurrentSchoolYearId();
+
+      if (
+        currentYearId &&
+        displaySchoolYears.some((sy) => sy._id === currentYearId)
+      ) {
+        setSelectedSchoolYearId(currentYearId);
+      } else {
+        // Nếu không có năm hiện tại, chọn năm học mới nhất
+        const newestYearId = getNewestSchoolYearId(displaySchoolYears);
+        setSelectedSchoolYearId(newestYearId);
+      }
     }
-  }, [displaySchoolYears, selectedSchoolYearId]);
+  }, [selectedSchoolYearId, displaySchoolYears, schoolYears]);
 
   // Lấy text từ DB (hoặc i18n)
   const rawText =
@@ -418,17 +433,23 @@ const ScholarShipContent = ({
         </div>
         {currentCategory.coverImage && (
           <div className="relative mb-4 mt-8 w-full max-h-[470px] mx-auto">
-            {/* Lớp dưới cùng: ảnh coverImage */}
+            {/* Lớp dưới cùng: ảnh coverImage từ Frappe */}
             <img
               src={`${BASE_URL}${currentCategory.coverImage}`}
               alt="Cover"
               className="w-full max-h-[470px] object-cover"
+              onError={(e) => {
+                e.target.style.display = "none";
+              }}
             />
             {/* Lớp giữa: khung frame-cover.png đè lên */}
             <img
               src={`/halloffame/frame-cover.png`}
               alt="Frame Cover"
               className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+              onError={(e) => {
+                e.target.style.display = "none";
+              }}
             />
             {/* Lớp trên cùng: text ở góc trên bên phải căn giữa theo chiều dọc */}
             <div className="absolute top-0 right-0 h-full flex items-center justify-center pr-4">
@@ -483,83 +504,109 @@ const ScholarShipContent = ({
       </div>
 
       {/* Hiển thị các record, nhóm theo SubAward (mỗi SubAward là 1 Level) */}
-      {sortedGroups.map(({ subAwardLabel, recordsGroup, priority }) => {
-        // Lấy subAward từ category để có thông tin labelEng
-        const subAward = currentCategory.subAwards?.find(
-          (sub) => sub.label === subAwardLabel
-        );
-
-        // Lấy danh sách các student từ mỗi record trong group
-        const studentItems = recordsGroup.flatMap((record) =>
-          record.students.map((student) => ({ record, student }))
-        );
-
-        return (
-          <div
-            key={subAwardLabel}
-            className="w-full border-b border-gray-200 pb-4 mx-auto"
-          >
-            <div
-              className="w-full flex justify-between items-center cursor-pointer py-4 font-semibold"
-              onClick={() =>
-                setOpenLevel(openLevel === subAwardLabel ? null : subAwardLabel)
-              }
-            >
-              <span
-                className="font-bold lg:text-2xl text-xl"
-                style={{ color: priorityColors[priority - 1] || "#002855" }}
-              >
-                {i18n.language === "vi"
-                  ? subAwardLabel
-                  : subAward?.labelEng || subAwardLabel}
-              </span>
-              <span className="text-gray-500 text-lg">
-                {openLevel === subAwardLabel ? (
-                  <FaAngleDown />
-                ) : (
-                  <FaAngleRight />
-                )}
-              </span>
-            </div>
-            {(openLevel === subAwardLabel ||
-              expandedGroups.has(subAwardLabel)) && (
-              <div className="w-full grid justify-items-center 2xl:grid-cols-5 lg:grid-cols-4 md:grid-cols-3 grid-cols-2 gap-x-[8px] gap-y-[20px] lg:gap-x-[30px] lg:gap-y-[35px]">
-                {studentItems.map((item, idx) => {
-                  const { record, student } = item;
-                  return (
-                    <div
-                      key={`${subAwardLabel}-${idx}`}
-                      className="lg:h-[400px] lg:w-[258px] w-[180px] h-[270px] border rounded-[20px] shadow-sm lg:py-[20px] lg:px-[25px] px-[15px] py-[15px] bg-gradient-to-b from-[#03171c] to-[#182b55] flex flex-col items-center justify-center space-y-2 cursor-pointer"
-                      onClick={() => handleOpenModal(record, student)}
-                    >
-                      {student.photo?.photoUrl ? (
-                        <img
-                          src={`${BASE_URL}${student.photo.photoUrl}`}
-                          alt="Student"
-                          className="lg:h-[260px] lg:w-[208px] w-[208px] h-[160px] object-cover object-top rounded-[15px]"
-                        />
-                      ) : (
-                        <div className="text-xs italic text-gray-400">
-                          {t("noPhoto", "Chưa có ảnh")}
-                        </div>
-                      )}
-                      <div className="h-[20px] w-[208px] lg:text-[16px] text-xs lg:pt-[13px] lg:pb-[15px] pt-[8px] pb-[10px] font-semibold text-white py-2 text-center">
-                        {t("classLabel", "Lớp")}{" "}
-                        {student.currentClass?.name ||
-                          student.currentClass?.className ||
-                          t("noClass", "Chưa cập nhật lớp")}
-                      </div>
-                      <div className="h-[60px] lg:w-[208px] w-[150px] text-[#f9d16f]  lg:text-[18px] text-[14px] font-bold text-center">
-                        {student.student?.name}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+      {sortedGroups.length === 0 && selectedSchoolYearId && (
+        <div className="text-center py-16">
+          <p className="text-gray-500 text-lg mb-4">
+            {t(
+              "noSubCategoriesFound",
+              "Chưa có danh mục học bổng nào cho năm học này"
             )}
-          </div>
-        );
-      })}
+          </p>
+          <p className="text-gray-400 text-sm">
+            {t("pleaseSelectAnotherYear", "Vui lòng chọn năm học khác")}
+          </p>
+        </div>
+      )}
+
+      {sortedGroups.map(
+        ({ subAwardLabel, subAwardLabelEng, recordsGroup, priority }) => {
+          // Lấy danh sách các student từ mỗi record trong group
+          const studentItems = recordsGroup.flatMap((record) =>
+            record.students.map((student) => ({ record, student }))
+          );
+
+          return (
+            <div
+              key={subAwardLabel}
+              className="w-full border-b border-gray-200 pb-4 mx-auto"
+            >
+              <div
+                className="w-full flex justify-between items-center cursor-pointer py-4 font-semibold"
+                onClick={() =>
+                  setOpenLevel(
+                    openLevel === subAwardLabel ? null : subAwardLabel
+                  )
+                }
+              >
+                <span
+                  className="font-bold lg:text-2xl text-xl"
+                  style={{ color: priorityColors[priority - 1] || "#002855" }}
+                >
+                  {i18n.language === "vi"
+                    ? subAwardLabel
+                    : subAwardLabelEng || subAwardLabel}
+                </span>
+                <span className="text-gray-500 text-lg">
+                  {openLevel === subAwardLabel ? (
+                    <FaAngleDown />
+                  ) : (
+                    <FaAngleRight />
+                  )}
+                </span>
+              </div>
+              {(openLevel === subAwardLabel ||
+                expandedGroups.has(subAwardLabel)) && (
+                <>
+                  {studentItems.length === 0 ? (
+                    <div className="text-center py-8">
+                      <p className="text-gray-400 text-sm">
+                        {t(
+                          "noStudentsInThisCategory",
+                          "Chưa có học sinh nào nhận học bổng này"
+                        )}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="w-full grid justify-items-center 2xl:grid-cols-5 lg:grid-cols-4 md:grid-cols-3 grid-cols-2 gap-x-[8px] gap-y-[20px] lg:gap-x-[30px] lg:gap-y-[35px]">
+                      {studentItems.map((item, idx) => {
+                        const { record, student } = item;
+                        return (
+                          <div
+                            key={`${subAwardLabel}-${idx}`}
+                            className="lg:h-[400px] lg:w-[258px] w-[180px] h-[270px] border rounded-[20px] shadow-sm lg:py-[20px] lg:px-[25px] px-[15px] py-[15px] bg-gradient-to-b from-[#03171c] to-[#182b55] flex flex-col items-center justify-center space-y-2 cursor-pointer"
+                            onClick={() => handleOpenModal(record, student)}
+                          >
+                            {student.photo?.photoUrl ? (
+                              <img
+                                src={`${BASE_URL}${student.photo.photoUrl}`}
+                                alt="Student"
+                                className="lg:h-[260px] lg:w-[208px] w-[208px] h-[160px] object-cover object-top rounded-[15px]"
+                              />
+                            ) : (
+                              <div className="text-xs italic text-gray-400">
+                                {t("noPhoto", "Chưa có ảnh")}
+                              </div>
+                            )}
+                            <div className="h-[20px] w-[208px] lg:text-[16px] text-xs lg:pt-[13px] lg:pb-[15px] pt-[8px] pb-[10px] font-semibold text-white py-2 text-center">
+                              {t("classLabel", "Lớp")}{" "}
+                              {student.currentClass?.name ||
+                                student.currentClass?.className ||
+                                t("noClass", "Chưa cập nhật lớp")}
+                            </div>
+                            <div className="h-[60px] lg:w-[208px] w-[150px] text-[#f9d16f]  lg:text-[18px] text-[14px] font-bold text-center">
+                              {student.student?.name}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          );
+        }
+      )}
       {/* Modal hiển thị chi tiết khi click vào 1 học sinh */}
       {showModal && modalStudent && modalRecord && (
         <div
