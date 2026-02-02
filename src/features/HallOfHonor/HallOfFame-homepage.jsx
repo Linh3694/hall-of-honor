@@ -1115,7 +1115,7 @@ const HallofFame = () => {
               className="shimmer-text 2xl:w-[550px] xl:w-[400px] w-[300px] mb-8"
             />
             <button
-              onClick={() => navigate("/hall-of-honor/detail")}
+              onClick={() => navigate("/detail/scholarship-talent")}
               className="xl:w-[433px] w-[300px] mt-10 xl:px-16 px-10 py-2 bg-[#F9D16F] rounded-full font-semibold transition-colors"
             >
               <h3 className="shimmer-text-2 xl:text-[24px] text-[20px] font-bold">
