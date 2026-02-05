@@ -685,10 +685,10 @@ const ScholarShipContent = ({
                 {(i18n.language === "vi"
                   ? modalRecord.students.find(
                       (s) => s.student?._id === modalStudent.student?._id
-                    )?.activity
+                    )?.activities_vn
                   : modalRecord.students.find(
                       (s) => s.student?._id === modalStudent.student?._id
-                    )?.activityEng
+                    )?.activities_en
                 )?.map((act, idx) => (
                   <li key={idx} className="flex items-center font-bold">
                     <img
@@ -775,10 +775,10 @@ const ScholarShipContent = ({
                   {(i18n.language === "vi"
                     ? modalRecord.students.find(
                         (s) => s.student?._id === modalStudent.student?._id
-                      )?.activity
+                      )?.activities_vn
                     : modalRecord.students.find(
                         (s) => s.student?._id === modalStudent.student?._id
-                      )?.activityEng
+                      )?.activities_en
                   )?.map((act, idx) => (
                     <li key={idx} className="flex items-center font-bold">
                       <img
