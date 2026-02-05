@@ -682,23 +682,28 @@ const ScholarShipContent = ({
               <hr className="border-gray-300 mb-6" />
               {/* Activities list */}
               <ul className="max-h-[250px] py-auto flex flex-col items-start justify-center space-y-3">
-                {(i18n.language === "vi"
-                  ? modalRecord.students.find(
-                      (s) => s.student?._id === modalStudent.student?._id
-                    )?.activities_vn
-                  : modalRecord.students.find(
-                      (s) => s.student?._id === modalStudent.student?._id
-                    )?.activities_en
-                )?.map((act, idx) => (
-                  <li key={idx} className="flex items-center font-bold">
-                    <img
-                      src="/halloffame/star.svg"
-                      alt="star"
-                      className="mt-1 flex-shrink-0 w-5 h-5"
-                    />
-                    <p className="ml-3 text-white text-sm">{act}</p>
-                  </li>
-                ))}
+                {(() => {
+                  const student = modalRecord.students.find(
+                    (s) => s.student?._id === modalStudent.student?._id
+                  );
+                  // Lấy activities theo ngôn ngữ hiện tại
+                  const activities = i18n.language === "vi" 
+                    ? student?.activity 
+                    : student?.activityEng;
+                  
+                  return (activities && activities.length > 0)
+                    ? activities.map((act, idx) => (
+                        <li key={idx} className="flex items-center font-bold">
+                          <img
+                            src="/halloffame/star.svg"
+                            alt="star"
+                            className="mt-1 flex-shrink-0 w-5 h-5"
+                          />
+                          <p className="ml-3 text-white text-sm">{act}</p>
+                        </li>
+                      ))
+                    : <li className="text-gray-400 text-sm">Chưa có hoạt động</li>;
+                })()}
               </ul>
               <hr className="border-gray-300 mt-6" />
             </div>
@@ -772,23 +777,28 @@ const ScholarShipContent = ({
               {/* Activities */}
               <div className="w-full px-4 max-h-[200px] overflow-y-hidden hover:overflow-y-auto">
                 <ul className="flex flex-col items-start space-y-3">
-                  {(i18n.language === "vi"
-                    ? modalRecord.students.find(
-                        (s) => s.student?._id === modalStudent.student?._id
-                      )?.activities_vn
-                    : modalRecord.students.find(
-                        (s) => s.student?._id === modalStudent.student?._id
-                      )?.activities_en
-                  )?.map((act, idx) => (
-                    <li key={idx} className="flex items-center font-bold">
-                      <img
-                        src="/halloffame/star.svg"
-                        alt="star"
-                        className="mt-1 flex-shrink-0 w-5 h-5"
-                      />
-                      <p className="ml-3 text-white text-sm">{act}</p>
-                    </li>
-                  ))}
+                  {(() => {
+                    const student = modalRecord.students.find(
+                      (s) => s.student?._id === modalStudent.student?._id
+                    );
+                    // Sử dụng đúng tên field: activity và activityEng
+                    const activities = i18n.language === "vi" 
+                      ? student?.activity 
+                      : student?.activityEng;
+                    
+                    return (activities && activities.length > 0)
+                      ? activities.map((act, idx) => (
+                          <li key={idx} className="flex items-center font-bold">
+                            <img
+                              src="/halloffame/star.svg"
+                              alt="star"
+                              className="mt-1 flex-shrink-0 w-5 h-5"
+                            />
+                            <p className="ml-3 text-white text-sm">{act}</p>
+                          </li>
+                        ))
+                      : <li className="text-gray-400 text-sm">Chưa có hoạt động</li>;
+                  })()}
                 </ul>
               </div>
               <hr className="w-full border-gray-300 my-4" />

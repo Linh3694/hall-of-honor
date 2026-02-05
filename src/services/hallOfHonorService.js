@@ -245,6 +245,9 @@ const normalizeStudent = (frappeStudent) => {
     exam: frappeStudent.exam || "",
     testName: frappeStudent.exam || "",  // Alias cho compatibility
     score: frappeStudent.score || "",
+    // Map activities từ backend
+    activity: frappeStudent.activities_vn || [],
+    activityEng: frappeStudent.activities_en || [],
   };
 };
 

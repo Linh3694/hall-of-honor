@@ -515,7 +515,7 @@ const ClassHonorContent = ({
     setModalClass(cls);
     setShowModal(true);
     navigate(
-      `/hall-of-honor/detail/${categoryName}/class/${record._id}/${cls.classInfo?._id}`
+      `/detail/${categoryName}/class/${record._id}/${cls.classInfo?._id}`
     );
   };
 
@@ -523,7 +523,7 @@ const ClassHonorContent = ({
     setShowModal(false);
     setModalRecord(null);
     setModalClass(null);
-    navigate(`/hall-of-honor/detail/${categoryName}`);
+    navigate(`/detail/${categoryName}`);
   };
 
   const findSchoolYearLabel = (syId) => {
