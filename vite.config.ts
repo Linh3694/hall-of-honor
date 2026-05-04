@@ -2,9 +2,34 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import svgr from "vite-plugin-svgr";
 import path from "node:path";
-import { viteObfuscateFile } from "vite-plugin-obfuscator";
+import { obfuscate } from "javascript-obfuscator";
 
-// Plugin obfuscator: bundle dùng transformIndexHtml + API deprecated (enforce/transform) — không có bản Vite 5+ thay thế sẵn; chờ upstream hoặc wrap riêng.
+/** Obfuscate chỉ chunk app — tránh làm hỏng Swiper/Splide/GSAP trong vendor-* (prod từng bị xếp dọc + marquee chết). */
+function viteObfuscateNonVendor(
+  options: Parameters<typeof obfuscate>[1] = {},
+) {
+  return {
+    name: "vite:obfuscate-non-vendor",
+    transformIndexHtml: {
+      enforce: "post" as const,
+      transform(
+        html: string,
+        ctx: { bundle?: Record<string, { code?: string }> },
+      ) {
+        const bundle = ctx.bundle;
+        if (!bundle) return html;
+        for (const [fileName, chunk] of Object.entries(bundle)) {
+          if (!chunk?.code) continue;
+          if (fileName.includes("vendor-")) continue;
+          chunk.code = obfuscate(chunk.code, options).getObfuscatedCode();
+        }
+        return html;
+      },
+    },
+  };
+}
+
+// Plugin obfuscator gốc obfuscate mọi chunk → hay phá thư viện; dùng viteObfuscateNonVendor thay thế.
 export default defineConfig(({ mode }) => ({
   plugins: [
     react({
@@ -13,7 +38,7 @@ export default defineConfig(({ mode }) => ({
     svgr(),
     ...(mode === "production"
       ? [
-          viteObfuscateFile({
+          viteObfuscateNonVendor({
             compact: true,
             controlFlowFlattening: false,
             deadCodeInjection: false,
