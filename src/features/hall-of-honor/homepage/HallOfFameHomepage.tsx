@@ -134,7 +134,6 @@ const HallofFame = () => {
   const counts = useAnimatedCounters(HOMEPAGE_STAT_COUNTS, shouldStartCounting);
 
   const swiperRef = useRef(null);
-  const [activeSlide, setActiveSlide] = useState(0);
 
   // State responsive cho kích thước slide
   const [itemWidth, setItemWidth] = useState(1280);
@@ -188,7 +187,8 @@ const HallofFame = () => {
           }
         });
       },
-      { threshold: 0.5 }, // Điều chỉnh ngưỡng nếu cần
+      // Ngưỡng thấp hơn — tránh prod/CSS không bao giờ đạt 50% → marquee mãi opacity:0
+      { threshold: 0.08, rootMargin: "0px 0px 8% 0px" },
     );
 
     marqueeElements.forEach((element) => {
@@ -202,8 +202,24 @@ const HallofFame = () => {
     };
   }, []);
 
+  // Dự phòng prod: nếu IntersectionObserver không đạt ngưỡng, tránh marquee mãi opacity:0
   useEffect(() => {
-    const splide = new Splide(".splide", {
+    const timer = window.setTimeout(() => {
+      document.querySelectorAll(".marquee-container.pre-init").forEach((el) => {
+        if (!el.classList.contains("active")) {
+          el.classList.add("active");
+        }
+      });
+    }, 3200);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  // Desktop: chỉ mount Splide cảm nhận HS — tránh trùng selector ".splide" với mobile
+  useEffect(() => {
+    if (isMobileView) return;
+    const root = document.querySelector("#splide-desktop-student-feedback");
+    if (!root) return;
+    const splide = new Splide(root, {
       type: "loop",
       drag: "free",
       focus: "center",
@@ -211,8 +227,8 @@ const HallofFame = () => {
       autoScroll: {
         speed: 0.5,
       },
-      gap: "40px", // Hoặc 20, 30px, v.v.
-      pagination: false, // Tắt dấu chấm phân trang
+      gap: "40px",
+      pagination: false,
     });
 
     splide.mount({ AutoScroll });
@@ -220,7 +236,7 @@ const HallofFame = () => {
     return () => {
       splide.destroy();
     };
-  }, []);
+  }, [isMobileView]);
 
   useEffect(() => {
     if (isMobileView) {
@@ -437,32 +453,25 @@ const HallofFame = () => {
             </h2>
           </div>
 
-          {/* Vùng carousel */}
-          <Swiper
-            loop={true}
-            speed={HOMEPAGE_SWIPER_SPEED_MS}
-            onSwiper={(swiper) => {
-              swiperRef.current = swiper;
-            }}
-            onSlideChange={(swiper) => setActiveSlide(swiper.realIndex)}
-            className="section2-slide relative w-full mx-auto z-10 section2-content"
-          >
-            {principals.map((principal, index) => {
-              const isActive = index === activeSlide;
-              return (
-                <SwiperSlide
-                  key={index}
-                  className="relative"
-                >
-                  {/* mx-auto: Swiper .swiper-slide là display:block nên flex justify-center trên slide không căn được card */}
-                  <div
-                    style={{ width: itemWidth, height: itemHeight }}
-                    className={`animate-nudge carousel-slide mx-auto flex-shrink-0 rounded-[20px] lg:px-10 lg:py-12 px-7 py-7 overflow-hidden transition-all duration-500 ease-in-out ${
-                      isActive
-                        ? "bg-[#f8f8f8] backdrop-blur-none scale-100 opacity-100"
-                        : "bg-[#000000] backdrop-blur-3xl scale-75 opacity-10"
-                    }`}
-                  >
+          {/* Vùng carousel — nút tách khỏi slide; trạng thái thẻ theo .swiper-slide-active (đúng khi loop+clone) */}
+          <div className="relative w-full max-w-[100vw] px-1">
+            <Swiper
+              loop
+              centeredSlides
+              slidesPerView={1}
+              speed={HOMEPAGE_SWIPER_SPEED_MS}
+              onSwiper={(swiper) => {
+                swiperRef.current = swiper;
+              }}
+              className="section2-slide principal-swiper relative w-full mx-auto z-10 section2-content"
+            >
+              {principals.map((principal, index) => {
+                return (
+                  <SwiperSlide key={index} className="relative">
+                    <div
+                      style={{ width: itemWidth, height: itemHeight }}
+                      className="principal-card-inner animate-nudge carousel-slide mx-auto flex-shrink-0 rounded-[20px] lg:px-10 lg:py-12 px-7 py-7 overflow-hidden transition-all duration-500 ease-in-out"
+                    >
                     <div className="flex flex-row h-auto items-start">
                       {/* Ảnh nền chìm phía sau */}
                       <img
@@ -523,28 +532,27 @@ const HallofFame = () => {
                       </div>
                     </div>
                   </div>
-                  {isActive && (
-                    <>
-                      {/* Nút chuyển slide bên trái - nằm ngoài card */}
-                      <button
-                        className="animate-slideOutLeft block absolute top-1/2 left-0 md:left-[2%] lg:left-[5%] transform -translate-y-1/2 transition-all duration-300 hover:-translate-x-4 md:bg-[#e5e5e5] text-[#cacaca] md:text-[#757575] rounded-full p-2"
-                        onClick={() => swiperRef.current.slidePrev()}
-                      >
-                        <FaChevronLeft className="xll:w-6 h-auto w-5" />
-                      </button>
-                      {/* Nút chuyển slide bên phải - nằm ngoài card */}
-                      <button
-                        className="animate-slideOutRight block absolute top-1/2 right-0 md:right-[2%] lg:right-[5%] transform -translate-y-1/2 transition-all duration-300 hover:translate-x-4 md:bg-[#e5e5e5] text-[#cacaca] md:text-[#757575] rounded-full p-2"
-                        onClick={() => swiperRef.current.slideNext()}
-                      >
-                        <FaChevronRight className="xll:w-6 h-auto w-5" />
-                      </button>
-                    </>
-                  )}
                 </SwiperSlide>
-              );
-            })}
-          </Swiper>
+                );
+              })}
+            </Swiper>
+            <button
+              type="button"
+              className="animate-slideOutLeft flex absolute top-1/2 left-0 md:left-[1%] lg:left-[3%] z-20 -translate-y-1/2 transition-all duration-300 hover:-translate-x-1 md:bg-[#e5e5e5] text-[#cacaca] md:text-[#757575] rounded-full p-2"
+              aria-label="Slide trước"
+              onClick={() => swiperRef.current?.slidePrev?.()}
+            >
+              <FaChevronLeft className="xll:w-6 h-auto w-5" />
+            </button>
+            <button
+              type="button"
+              className="animate-slideOutRight flex absolute top-1/2 right-0 md:right-[1%] lg:right-[3%] z-20 -translate-y-1/2 transition-all duration-300 hover:translate-x-1 md:bg-[#e5e5e5] text-[#cacaca] md:text-[#757575] rounded-full p-2"
+              aria-label="Slide sau"
+              onClick={() => swiperRef.current?.slideNext?.()}
+            >
+              <FaChevronRight className="xll:w-6 h-auto w-5" />
+            </button>
+          </div>
         </section>
 
         {isMobileView ? (
@@ -688,8 +696,8 @@ const HallofFame = () => {
                 />
               </div>
             </div>
-            {/* Slider Splide */}
-            <div className="splide w-full">
+            {/* Slider Splide — id riêng, không dùng chung selector .splide với mobile */}
+            <div id="splide-desktop-student-feedback" className="splide w-full">
               <div className="splide__track">
                 <ul className="splide__list">
                   {starStudents.map((student, index) => {

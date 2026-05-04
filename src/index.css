@@ -223,6 +223,22 @@ code {
     background-position: 0% center;
   }
 }
+/* Thông điệp hiệu trưởng (Swiper loop): trạng thái thẻ theo slide DOM — tránh lệch React + clone */
+.section2-content.principal-swiper .swiper-slide .principal-card-inner {
+  opacity: 0.1;
+  transform: scale(0.75);
+  background-color: #000000;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+.section2-content.principal-swiper .swiper-slide-active .principal-card-inner {
+  opacity: 1;
+  transform: scale(1);
+  background-color: #f8f8f8;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
 /* Ban đầu, ẩn marquee bằng opacity và dịch chuyển xuống dưới 50px */
 .marquee-container.pre-init {
   opacity: 0;
