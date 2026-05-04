@@ -2,7 +2,6 @@ module.exports = {
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
-    "./src/components/ui/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
       extend: {
@@ -44,6 +43,13 @@ module.exports = {
         },
       
         colors: {
+          brand: {
+            navy: "#002855",
+            orange: "#F05023",
+            gold: "#F9D16F",
+            gray: "#757575",
+            wellspring: "#F15A24",
+          },
           'navy-700': '#1B2559',
           'blue-500': '#3B82F6',
           'blue-600': '#2563EB',

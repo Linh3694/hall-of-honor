@@ -1,4 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800;900&display=swap');
+:root {
+  --color-brand-navy: #002855;
+  --color-brand-orange: #f05023;
+  --color-brand-gold: #f9d16f;
+  --color-brand-gray: #757575;
+}
 
 @tailwind base;
 @tailwind components;
@@ -257,6 +262,16 @@ code {
   }
   }
 
+/* Quét ánh sáng chỉ cho chữ (title/subtitle), không dùng trên nền thẻ */
+@keyframes titleGoldShimmer {
+  0% {
+    background-position: 200% center;
+  }
+  100% {
+    background-position: -200% center;
+  }
+}
+
 .shimmer-text-2 {
   background: linear-gradient(
     45deg,
@@ -270,17 +285,13 @@ code {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 
-  /* Animation quét từ phải sang trái */
-  animation: blueShimmer 2s linear infinite;
-}
-
-@keyframes blueShimmer {
-  0% {
-    background-position: 200% center;
-  }
-  100% {
-    background-position: 0% center;
-  }
+  animation: titleGoldShimmer 2s linear infinite;
+  /* Không dùng display: inline-block — sẽ ghi đè flex; chừa dấu bằng line-height + padding */
+  overflow: visible;
+  line-height: 1.35;
+  padding: 0.15em 0.08em 0.1em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
 }
 
 .shimmer-text-title {
@@ -293,21 +304,58 @@ code {
 
   /* Cắt gradient theo chữ */
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 
-  /* Animation quét từ phải sang trái */
-  animation: blueShimmer 5s linear infinite;
+  animation: titleGoldShimmer 5s linear infinite;
+
+  /* Dấu tiếng Việt: không set display — class Tailwind `flex` / flex-col phải giữ nguyên */
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: visible;
+  line-height: 1.35;
+  padding: 0.2em 0.12em 0.12em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
 }
 
-@keyframes blueShimmer {
-  0% {
-    background-position: 200% center;
-  }
-
-  100% {
-        background-position: -200% center;
-  }
+/* Tiêu đề nhiều dòng (mỗi dòng là div con — AP / Toả sáng…) */
+.shimmer-text-title > div,
+.shimmer-text-title > span {
+  line-height: 1.35;
+  padding: 0.1em 0.02em 0.06em;
+  overflow: visible;
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
 }
+
+/* Dòng mô tả dưới tiêu đề (italic) — cùng hiệu ứng vàng bóng như shimmer-text-title */
+.shimmer-text-subtitle {
+  background: linear-gradient(45deg,
+    #f9d16f 0%,
+    #db9a38 28%,
+    #fff1d5 62%,
+    #f9d16f 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: titleGoldShimmer 5s linear infinite;
+  font-style: italic;
+  font-weight: 600; /* tương đương font-semibold */
+  overflow: visible;
+  text-align: center;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 0.12em 0.28em 0.1em 0.08em;
+  line-height: 1.35;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
 .fixed-section {
   position: fixed;
   top: 0;

@@ -1,0 +1,12 @@
+{
+  "apScholarshipValue": "Giá trị học bổng",
+  "apScholarshipCardPrefix": "Học bổng",
+  "apModalScholarshipTitle": "Học bổng AP Diploma",
+  "apModalClassWithYear": "Lớp {{className}} (Năm học {{year}})",
+  "apScholarshipHBLine": "HB AP Diploma",
+  "shineScholarshipHBLine": "HB Toả sáng",
+  "scholarship_sub_student": "Học sinh",
+  "scholarship_sub_class": "Lớp",
+  "pleaseSelectAnotherYear": "Vui lòng chọn năm học khác",
+  "noActivitiesYet": "Chưa có hoạt động"
+}

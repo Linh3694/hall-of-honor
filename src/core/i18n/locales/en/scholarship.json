@@ -1,0 +1,12 @@
+{
+  "apScholarshipValue": "Scholarship value",
+  "apScholarshipCardPrefix": "Scholarship",
+  "apModalScholarshipTitle": "AP Diploma Scholarship",
+  "apModalClassWithYear": "Class {{className}} (School year {{year}})",
+  "apScholarshipHBLine": "AP Diploma Scholarship",
+  "shineScholarshipHBLine": "Wellspring Shine Scholarship",
+  "scholarship_sub_student": "Student",
+  "scholarship_sub_class": "Class",
+  "pleaseSelectAnotherYear": "Please select another school year",
+  "noActivitiesYet": "No activities yet"
+}
