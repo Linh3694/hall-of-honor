@@ -19,6 +19,36 @@ import ScholarshipStudentModal from "../../ScholarshipStudentModal";
 import { useStudentSearchQuery } from "../../hooks/useStudentSearch";
 import { normalizeSearchKey } from "@/shared/lib/textSearch";
 
+/** Tiểu mục đã chứa «Học bổng» / «Scholarship» → không ghép thêm tiền tố trên thẻ */
+function subAwardLabelAlreadyIncludesScholarshipPrefix(
+  label: string | undefined,
+  lang: string,
+): boolean {
+  const s = (label || "").trim().toLowerCase();
+  if (!s) return false;
+  if (lang === "vi") {
+    if (s.startsWith("học bổng")) return true;
+    const ascii = s.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    return ascii.startsWith("hoc bong");
+  }
+  return s.startsWith("scholarship");
+}
+
+/** Tiêu đề modal đã có «Học bổng» — cắt phần trùng ở nhãn tiểu mục (vd. «Học bổng 40%» → «40%») */
+function stripScholarshipWordForApModalSubLine(
+  label: string | undefined,
+  lang: string,
+): string {
+  let s = (label || "").trim();
+  if (!s) return s;
+  if (lang === "vi") {
+    s = s.replace(/^\s*học\s*bổng\s*/i, "").trim();
+  } else {
+    s = s.replace(/^\s*scholarship\s*/i, "").trim();
+  }
+  return s.replace(/^[/:\-–—]\s*/, "").trim();
+}
+
 /**
  * Học bổng AP Diploma & Học bổng Toả sáng — cùng UI (thẻ, modal tài năng, accordion năm).
  * - groupBySubAward=true (AP): lọc custom + tuỳ chọn theo mức subAward; lưới sort theo priority tiểu mục (CMS).
@@ -269,10 +299,14 @@ const ApDiplomaScholarshipContent = ({
   // Header modal AP: Học bổng AP Diploma + subAward; lớp + năm học tách 2 dòng
   const apDiplomaModalHeader = useMemo(() => {
     if (!groupBySubAward || !modalRecord || !modalStudent) return null;
-    const sub =
+    const subRaw =
       i18n.language === "vi"
         ? modalRecord.subAward?.label
         : modalRecord.subAward?.labelEng || modalRecord.subAward?.label;
+    const sub = stripScholarshipWordForApModalSubLine(
+      subRaw,
+      i18n.language === "vi" ? "vi" : "en",
+    );
     const title = t("apModalScholarshipTitle", "Học bổng AP Diploma");
     const scholarshipText = [title, sub].filter(Boolean).join(" ");
     const className =
@@ -311,15 +345,21 @@ const ApDiplomaScholarshipContent = ({
         const classSchoolLine = nhTag
           ? `${t("classLabel", "Lớp")} ${classRaw} - ${nhTag}`
           : `${t("classLabel", "Lớp")} ${classRaw}`;
-        // AP: "Học bổng" + mức tiểu mục (label CMS); Toả sáng: "HB Toả sáng" + subAward
+        // AP: mặc định tiền tố + mức (vd. 60%); nếu CMS đã đặt cả «Học bổng 60%» thì chỉ hiển thị label
         const subPct =
           i18n.language === "vi"
             ? record.subAward?.label
             : record.subAward?.labelEng || record.subAward?.label;
+        const subTrim = (subPct || "").trim();
         const scholarshipLine = groupBySubAward
-          ? [t("apScholarshipCardPrefix", "Học bổng"), subPct]
-              .filter(Boolean)
-              .join(" ")
+          ? subAwardLabelAlreadyIncludesScholarshipPrefix(
+              subTrim,
+              i18n.language === "vi" ? "vi" : "en",
+            )
+            ? subTrim
+            : [t("apScholarshipCardPrefix", "Học bổng"), subTrim]
+                .filter(Boolean)
+                .join(" ")
           : `${t("shineScholarshipHBLine", "HB Toả sáng")} ${subPct || ""}`.trim();
 
         return (
