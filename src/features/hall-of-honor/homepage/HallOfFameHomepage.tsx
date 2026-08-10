@@ -1017,14 +1017,14 @@ const HallofFame = () => {
       {/* Footer */}
       <div className="hidden lg:block w-full">
         <img
-          src={`/halloffame/footer.svg`}
+          src={`/halloffame/footer-desktop.png`}
           alt="Footer"
           className="w-full object-cover"
         />
       </div>
       <div className="lg:hidden w-full h-full">
         <img
-          src={`/halloffame/Footer_mobile.png`}
+          src={`/halloffame/footer-mobile.png`}
           alt="Footer"
           className="w-full object-cover"
         />
