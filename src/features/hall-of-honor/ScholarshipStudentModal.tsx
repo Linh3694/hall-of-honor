@@ -1,9 +1,9 @@
 // @ts-nocheck
 import React, { useEffect, useMemo, useState } from "react";
+import { resolveMediaUrl } from "@/shared/lib/mediaUrl";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { FaChevronLeft, FaChevronRight, FaTimes } from "react-icons/fa";
-import { BASE_URL } from "../../core/config";
 
 /**
  * Lấy danh sách hoạt động / thành tích theo đúng bản ghi student trong record
@@ -183,7 +183,7 @@ function ScholarshipStudentModal({
           </div>
           {modalStudent.photo?.photoUrl ? (
             <img
-              src={`${BASE_URL}/${modalStudent.photo.photoUrl}`}
+              src={resolveMediaUrl(modalStudent.photo.photoUrl)}
               alt={modalStudent.student?.name || ""}
               className="absolute object-cover object-top -bottom-[3%] left-1/2 transform -translate-x-1/2 w-28 h-28 rounded-full shadow-lg"
             />
@@ -275,7 +275,7 @@ function ScholarshipStudentModal({
               {modalStudent.photo?.photoUrl ? (
                 <div className="absolute -top-12 left-1/2 transform -translate-x-1/2">
                   <img
-                    src={`${BASE_URL}/${modalStudent.photo.photoUrl}`}
+                    src={resolveMediaUrl(modalStudent.photo.photoUrl)}
                     alt={modalStudent.student?.name || ""}
                     className="w-[100px] h-[100px] rounded-full object-cover object-top shadow-lg"
                   />

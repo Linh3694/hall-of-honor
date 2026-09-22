@@ -1,7 +1,7 @@
 // @ts-nocheck
 import React, { useState, useEffect, useMemo } from "react";
+import { resolveMediaUrl } from "@/shared/lib/mediaUrl";
 import {
-  BASE_URL,
   subAwardDedupeKey,
 } from "@/core/config";
 import {
@@ -59,7 +59,7 @@ function ScholarshipStudentCard({ record, student, onOpen }) {
     >
       {student.photo?.photoUrl ? (
         <img
-          src={`${BASE_URL}/${student.photo.photoUrl}`}
+          src={resolveMediaUrl(student.photo.photoUrl)}
           alt="Student"
           className="lg:h-[260px] lg:w-[208px] w-[208px] h-[160px] object-cover object-top rounded-[15px]"
         />
@@ -366,7 +366,7 @@ const ScholarShipContent = ({
           <div className="relative mb-4 mt-8 w-full max-h-[470px] mx-auto">
             {/* Lớp dưới cùng: ảnh coverImage từ Frappe */}
             <img
-              src={`${BASE_URL}${currentCategory.coverImage}`}
+              src={resolveMediaUrl(currentCategory.coverImage)}
               alt="Cover"
               className="w-full max-h-[470px] object-cover"
               onError={(e) => {

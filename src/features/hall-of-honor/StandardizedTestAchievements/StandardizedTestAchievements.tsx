@@ -1,6 +1,7 @@
 // @ts-nocheck
 import React, { useState, useEffect } from "react";
-import { BASE_URL, subAwardLabelToSlug } from "@/core/config";
+import { resolveMediaUrl } from "@/shared/lib/mediaUrl";
+import { subAwardLabelToSlug } from "@/core/config";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import hallOfHonorService from "../api/hallOfHonorService";
@@ -69,7 +70,7 @@ const StandardizedTestAchievements = ({ categoryId, categoryName }) => {
         {currentCategory.coverImage && (
           <div className="relative mb-4 mt-8 w-full max-h-[470px] mx-auto">
             <img
-              src={`${BASE_URL}${currentCategory.coverImage}`}
+              src={resolveMediaUrl(currentCategory.coverImage)}
               alt="Cover"
               className="w-full max-h-[470px] object-cover"
               onError={(e) => {

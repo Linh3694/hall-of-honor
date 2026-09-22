@@ -1,7 +1,7 @@
 // @ts-nocheck
 import React, { useState, useEffect, useMemo } from "react";
+import { resolveMediaUrl } from "@/shared/lib/mediaUrl";
 import {
-  BASE_URL,
   TOP_GRADUATE_CATEGORY_ID,
   WISER_EXCELLENT_CATEGORY_ID,
   WISER_INSPIRATION_CATEGORY_ID,
@@ -778,7 +778,7 @@ const StudentHonorContent = ({
             <div className="mb-0.5 flex w-full flex-shrink-0 justify-center">
               {student.photo?.photoUrl ? (
                 <img
-                  src={`${BASE_URL}/${student.photo.photoUrl}`}
+                  src={resolveMediaUrl(student.photo.photoUrl)}
                   alt=""
                   className="h-[250px] w-[190px] object-cover object-top rounded-2xl shadow-md ring-1 ring-white/25"
                   onError={(e) => {
@@ -829,7 +829,7 @@ const StudentHonorContent = ({
       >
         {student.photo?.photoUrl ? (
           <img
-            src={`${BASE_URL}/${student.photo.photoUrl}`}
+            src={resolveMediaUrl(student.photo.photoUrl)}
             alt="Student"
             className="lg:h-[260px] lg:w-[208px] w-[208px] h-[160px] object-cover object-top rounded-[15px]"
           />
@@ -908,7 +908,7 @@ const StudentHonorContent = ({
 
   const categoryCoverDisplaySrc = useMemo(() => {
     if (currentCategory.coverImage) {
-      return `${BASE_URL}${currentCategory.coverImage}`;
+      return resolveMediaUrl(currentCategory.coverImage);
     }
     if (categoryId === WISER_EXCELLENT_CATEGORY_ID) {
       return WISER_EXCELLENT_DEFAULT_COVER_PATH;
@@ -1287,7 +1287,7 @@ const StudentHonorContent = ({
                           >
                             {student.photo?.photoUrl ? (
                               <img
-                                src={`${BASE_URL}/${student.photo.photoUrl}`}
+                                src={resolveMediaUrl(student.photo.photoUrl)}
                                 alt="Student"
                                 className="lg:h-[260px] lg:w-[208px] w-[208px] h-[160px] object-cover object-top rounded-[15px]"
                               />
@@ -1361,7 +1361,7 @@ const StudentHonorContent = ({
               <div className="relative flex-shrink-0 px-[25px] lg:px-0">
                 {modalStudent.photo?.photoUrl ? (
                   <img
-                    src={`${BASE_URL}/${modalStudent.photo.photoUrl}`}
+                    src={resolveMediaUrl(modalStudent.photo.photoUrl)}
                     alt="Student"
                     className="relative z-10 lg:w-[281px] lg:h-[352px] w-full h-[320px] items-center object-cover object-top rounded-[15px] shadow-md "
                   />

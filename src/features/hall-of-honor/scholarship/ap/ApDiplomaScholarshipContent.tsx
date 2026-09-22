@@ -1,7 +1,7 @@
 // @ts-nocheck
 import React, { useState, useEffect, useMemo } from "react";
+import { resolveMediaUrl } from "@/shared/lib/mediaUrl";
 import {
-  BASE_URL,
   pickPreferredSubAwardRow,
   subAwardDedupeKey,
   subAwardPrioritySortValue,
@@ -372,7 +372,7 @@ const ApDiplomaScholarshipContent = ({
             <div className="w-full max-w-[208px] mx-auto aspect-[2/3] rounded-[16px] overflow-hidden ring-1 ring-white/30 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] bg-black/20 shrink-0">
               {student.photo?.photoUrl ? (
                 <img
-                  src={`${BASE_URL}/${student.photo.photoUrl}`}
+                  src={resolveMediaUrl(student.photo.photoUrl)}
                   alt=""
                   className="w-full h-full object-cover object-top"
                 />
@@ -442,7 +442,7 @@ const ApDiplomaScholarshipContent = ({
         {currentCategory.coverImage ? (
           <div className="relative mb-4 mt-8 w-full max-h-[470px] mx-auto">
             <img
-              src={`${BASE_URL}${currentCategory.coverImage}`}
+              src={resolveMediaUrl(currentCategory.coverImage)}
               alt=""
               className="w-full max-h-[470px] object-cover"
               onError={(e) => {

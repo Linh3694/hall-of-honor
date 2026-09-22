@@ -1,11 +1,11 @@
 // @ts-nocheck
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { resolveMediaUrl } from "@/shared/lib/mediaUrl";
 import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { FaSearch } from "react-icons/fa";
 import { FaAngleDown, FaAngleRight } from "react-icons/fa6";
 import {
-  BASE_URL,
   SCHOLARSHIP_TALENT_CATEGORY_ID,
   COMPETITION_ACHIEVEMENT_CATEGORY_ID,
   CATEGORY_ID_BY_SLUG,
@@ -466,7 +466,7 @@ const Detail = () => {
 
   // CMS có cover thì ưu tiên; không có — trang cuộc thi dùng banner mặc định trong public
   const coverImageSrc = displaySubCategory.coverImage
-    ? `${BASE_URL}${displaySubCategory.coverImage}`
+    ? resolveMediaUrl(displaySubCategory.coverImage)
     : isCompetitionAchievement
       ? COMPETITION_DEFAULT_COVER_PATH
       : null;
@@ -851,7 +851,7 @@ const Detail = () => {
                             <div className="mb-2 flex w-full flex-shrink-0 justify-center">
                               {student.photo?.photoUrl ? (
                                 <img
-                                  src={`${BASE_URL}${student.photo.photoUrl}`}
+                                  src={resolveMediaUrl(student.photo.photoUrl)}
                                   alt="Student"
                                   className="h-[250px] w-[190px] object-cover object-top rounded-2xl shadow-md ring-1 ring-white/25"
                                   onError={(e) => {
@@ -890,7 +890,7 @@ const Detail = () => {
                             <div className="mb-3 flex-shrink-0">
                               {student.photo?.photoUrl ? (
                                 <img
-                                  src={`${BASE_URL}${student.photo.photoUrl}`}
+                                  src={resolveMediaUrl(student.photo.photoUrl)}
                                   alt="Student"
                                   className="h-[250px] w-[190px] object-cover object-top rounded-2xl shadow-md"
                                   onError={(e) => {

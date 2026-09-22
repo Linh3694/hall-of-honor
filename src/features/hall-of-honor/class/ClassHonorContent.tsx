@@ -1,6 +1,6 @@
 // @ts-nocheck
 import React, { useState, useEffect, useMemo } from "react";
-import { BASE_URL } from "@/core/config";
+import { resolveMediaUrl } from "@/shared/lib/mediaUrl";
 import { FaAngleDown, FaAngleRight } from "react-icons/fa6";
 import { FaSearch } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
@@ -503,7 +503,7 @@ const ClassHonorContent = ({
           <div className="relative mb-4 mt-8 w-full max-h-[470px] mx-auto">
             {/* Lớp dưới cùng: ảnh coverImage từ Frappe */}
             <img
-              src={`${BASE_URL}${currentCategory.coverImage}`}
+              src={resolveMediaUrl(currentCategory.coverImage)}
               alt="Cover"
               className="w-full max-h-[470px] object-cover"
               onError={(e) => {
@@ -665,7 +665,7 @@ const ClassHonorContent = ({
                 >
                   {cls.classImage ? (
                     <img
-                      src={`${BASE_URL}${cls.classImage}`}
+                      src={resolveMediaUrl(cls.classImage)}
                       alt={`Ảnh lớp ${cls.classInfo?.className}`}
                       className="mt-2 w-full object-contain rounded-2xl"
                     />
@@ -736,7 +736,7 @@ const ClassHonorContent = ({
                           >
                             {cls.classImage ? (
                               <img
-                                src={`${BASE_URL}${cls.classImage}`}
+                                src={resolveMediaUrl(cls.classImage)}
                                 alt={`Ảnh lớp ${cls.classInfo?.className}`}
                                 className="mt-2 w-full object-contain rounded-2xl"
                               />
@@ -786,7 +786,7 @@ const ClassHonorContent = ({
               <div className="w-full relative flex items-center justify-center">
                 {modalClass.classImage ? (
                   <img
-                    src={`${BASE_URL}${modalClass.classImage}`}
+                    src={resolveMediaUrl(modalClass.classImage)}
                     alt="Class"
                     className="relative z-10 w-full h-auto object-cover rounded-[15px] shadow-md"
                   />

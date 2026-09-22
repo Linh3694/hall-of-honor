@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
+import { resolveMediaUrl } from "@/shared/lib/mediaUrl";
 import {
-  BASE_URL,
   SCHOLARSHIP_COVER_MAX_HEIGHT_PX,
   subAwardLabelToSlug,
 } from "@/core/config";
@@ -21,7 +21,7 @@ export function SubAwardCoverBanner({
   const urls = useMemo(() => {
     const slug = subAwardLabelToSlug(label);
     return [
-      ...(coverImage ? [`${BASE_URL}${coverImage}`] : []),
+      ...(coverImage ? [resolveMediaUrl(coverImage)] : []),
       `/halloffame/${slug}.png`,
       `/halloffame/${slug}.svg`,
     ];

@@ -14,7 +14,6 @@ import { useScrollDrivenStyle } from "@/shared/hooks/useScrollDrivenStyle";
 import { useGsapSectionReveal } from "@/shared/hooks/useGsapSectionReveal";
 import { useAnimatedCounters } from "@/shared/hooks/useAnimatedCounters";
 import {
-  CDN_URL,
   DESCRIPTION_TRUNCATE_CHARS,
   MARQUEE_TICK_MS,
   CAROUSEL_INTERVAL_MS,
@@ -815,7 +814,7 @@ const HallofFame = () => {
                 <div className="w-full relative flex-shrink-0 px-[25px] lg:px-0">
                   {selectedStudent.image ? (
                     <img
-                      src={`${CDN_URL}/Students/${selectedStudent.image}`}
+                      src={selectedStudent.image}
                       alt="Student"
                       className="relative z-10 w-full h-[300px] md:h-[500px] items-center object-cover object-top  rounded-[15px] shadow-md"
                     />
